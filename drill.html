@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Candle Coach — The Trap & Snap Drill</title>
+<style>
+  :root{--bg:#101623;--panel:#1a2334;--panel2:#222e44;--line:#2c3a55;
+  --txt:#f0f3fa;--dim:#93a0b8;--green:#3ddc97;--red:#ff6b6b;--gold:#ffd166;--blue:#5ea0ff;--purple:#b388ff;}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+  body{background:var(--bg);color:var(--txt);min-height:100vh;max-width:760px;margin:0 auto;padding:14px;display:flex;flex-direction:column}
+  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .logo{font-weight:900;font-size:18px}.logo span{color:var(--gold)}
+  .back{font-size:12px;color:var(--blue);text-decoration:none;font-weight:700}
+  .title{background:linear-gradient(135deg,#3d2b10,#1a2334);border:2px solid var(--gold);border-radius:18px;padding:16px 20px;margin-bottom:12px}
+  .title h1{font-size:22px;color:var(--gold)}
+  .title p{font-size:13px;color:#e8dcc0;margin-top:4px;line-height:1.5}
+  .steps{display:flex;gap:5px;margin-bottom:12px}
+  .st{flex:1;height:6px;border-radius:4px;background:var(--line)}
+  .st.done{background:var(--gold)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+  .stepname{font-size:12px;font-weight:900;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-bottom:6px}
+  .steptext{font-size:15px;line-height:1.65;color:#e8edf9;margin-bottom:10px}
+  .steptext b{color:var(--gold)}
+  canvas{width:100%;display:block;background:var(--panel2);border-radius:14px}
+  .btns{display:flex;gap:10px;margin-top:14px}
+  .btn{flex:1;padding:14px;border:none;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer}
+  .btn.next{background:var(--gold);color:#241a05}
+  .btn.prevb{background:var(--panel2);color:var(--dim);border:1px solid var(--line);flex:0 0 100px}
+  /* quiz */
+  .quiz{display:none}
+  .q{font-size:17px;font-weight:800;line-height:1.5;margin-bottom:14px}
+  .opt{display:block;width:100%;text-align:left;background:var(--panel2);border:2px solid var(--line);border-radius:14px;color:var(--txt);padding:14px;font-size:14px;font-weight:700;margin-bottom:10px;cursor:pointer}
+  .opt.right{border-color:var(--green);background:#123528}
+  .opt.wrong{border-color:var(--red);background:#3d1a1e}
+  .exp{font-size:13.5px;line-height:1.6;color:#d8e6de;background:#123528;border:1px solid var(--green);border-radius:12px;padding:12px;display:none;margin-top:6px}
+  .final{display:none;text-align:center;padding:26px 10px}
+  .final .big{font-size:52px;margin-bottom:12px}
+  .final h2{font-size:22px;margin-bottom:8px}
+  .final p{color:var(--dim);font-size:14px;line-height:1.6;margin-bottom:18px}
+</style>
+</head>
+<body>
+<div class="top"><div class="logo">CANDLE<span>COACH</span> 🪤</div><a class="back" href="index.html">← Playground</a></div>
+
+<div class="title"><h1>THE TRAP &amp; SNAP — Guided Drill</h1><p>Watch the strategy happen step by step on NVDA, then prove you can spot it. Tap "Next" to advance the morning.</p></div>
+
+<div class="steps" id="steps"></div>
+
+<div class="card">
+  <div class="stepname" id="sname"></div>
+  <div class="steptext" id="stext"></div>
+  <canvas id="c" height="300"></canvas>
+
+  <div id="walkbtns" class="btns">
+    <button class="btn prevb" onclick="prev()">← Back</button>
+    <button class="btn next" id="nextbtn" onclick="next()">Next →</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="quiz" id="quiz">
+    <div class="q">YOUR TURN 🎯 — The trap just sprang at the overnight low ($182.60) and price snapped back up to $183.40. Where do you BAIL if you're wrong?</div>
+    <button class="opt" onclick="answer(this,true)">A) $182.50 — just under the trap's low. If price goes back down there, the snap failed.</button>
+    <button class="opt" onclick="answer(this,false)">B) $180.00 — give it lots of room so I don't get shaken out.</button>
+    <button class="opt" onclick="answer(this,false)">C) No bail — it'll come back eventually, the strategy always works.</button>
+    <div class="exp" id="exp"><b>A is correct.</b> Your bail sits just past the trap's extreme — the exact spot that proves the reversal failed. B risks 4x too much (destroys the 1:2R math). C is "hope is not a strategy" — the trap can become a real breakdown, and that's how small losses become account-killers.</div>
+  </div>
+  <div class="quiz" id="quiz2">
+    <div class="q">One more 🎯 — It's 9:47 AM. Price is poking ABOVE the overnight high but hasn't fallen back yet. What do you do?</div>
+    <button class="opt" onclick="answer2(this,false)">A) Buy the breakout NOW before I miss the move!</button>
+    <button class="opt" onclick="answer2(this,true)">B) Nothing — wait to see if it snaps back inside the range. The trap isn't sprung yet.</button>
+    <button class="opt" onclick="answer2(this,false)">C) Sell short immediately — it's definitely a trap.</button>
+    <div class="exp" id="exp2"><b>B is correct.</b> The strategy trades the SNAP, not the trap. A is FOMO-buying the exact trap the strategy hunts. C is guessing before proof. Discipline = waiting for the snap-back, every single time.</div>
+  </div>
+  <div class="final" id="final">
+    <div class="big">🪤🏆</div><h2>Drill complete!</h2>
+    <p id="finaltxt"></p>
+    <button class="btn next" style="width:100%" onclick="location.href='flashcards.html'">Review the Trap &amp; Snap flashcards →</button>
+  </div>
+</div>
+
+<script>
+const STEPS=[
+ {n:"STEP 1 · 9:00 AM — Draw the overnight lines",t:"While you slept, overnight trading made a <b>high ($185.00)</b> and a <b>low ($183.00)</b>. Thousands of stop-losses sit just past those lines. Draw them. That's your whole prep.",upto:16},
+ {n:"STEP 2 · 9:35 AM — Price drifts to the floor",t:"Market opens. Price slides down toward the overnight low. Beginners are already nervous. You do <b>nothing</b> — you're waiting for the trap, not predicting it.",upto:24},
+ {n:"STEP 3 · 9:47 AM — THE TRAP SPRINGS",t:"Price stabs <b>below $183.00 to $182.60</b> — stop-losses fire, breakdown sellers pile in… and it instantly pulls back. <b>That fast poke-and-fail IS the trap.</b> Big players just filled their orders off everyone's stops.",upto:30},
+ {n:"STEP 4 · 9:52 AM — THE SNAP",t:"Price snaps back <b>above the overnight low</b> and breaks its first little 1-minute ceiling. The reversal is proven. <b>Entry trigger: buy the snap-back at $183.40.</b> You trade the snap — never the trap.",upto:37},
+ {n:"STEP 5 · Know your 3 prices",t:"<b>Buy: $183.40.</b> Bail: <b>$182.50</b> (just under the trap low — if it goes back there, you're wrong, small loss). Target: <b>$184.80</b> (overnight high). Risk $0.90 to make $1.40+ — better than 1:1.5R, and trims make it sweeter.",upto:37,levels:true},
+ {n:"STEP 6 · 10:20 AM — Payday",t:"Price runs to the overnight high. <b>Trim half at $184.80</b>, lock the win, let a piece ride. Total time: under an hour. One setup, one window, done for the day. THIS is the whole strategy — now prove you got it.",upto:44}
+];
+let step=0,score=0;
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const ONH=185.0,ONL=183.0;
+let seed=99;const rnd=()=>(seed=(seed*9301+49297)%233280)/233280;
+// full morning: range -> drift down -> sweep below ONL -> snap -> run to ONH
+const candles=[];let p=184.2;
+const path=[...Array(16)].map(()=>184.2+(rnd()-.5)*1.2)       // overnight chop
+ .concat([...Array(8)].map((_,i)=>184.0-i*0.14))              // drift down
+ .concat([182.9,182.62,182.85,183.3,183.45,183.7])            // trap + snap start
+ .concat([...Array(14)].map((_,i)=>183.8+i*0.15));            // run to high
+path.forEach(t=>{const o=p,c=t;candles.push({o,c,h:Math.max(o,c)+rnd()*.08,l:Math.min(o,c)-rnd()*.08});p=c;});
+function draw(){
+  cv.width=cv.parentElement.clientWidth-32;const W=cv.width,H=300;
+  const upto=STEPS[step].upto,lo=182.3,hi=185.5,Y=pr=>H-24-(pr-lo)/(hi-lo)*(H-56);
+  ctx.clearRect(0,0,W,H);
+  // overnight lines
+  [[ONH,'#ff6b6b','OVERNIGHT HIGH $185.00'],[ONL,'#3ddc97','OVERNIGHT LOW $183.00']].forEach(([pr,c,l])=>{
+    ctx.strokeStyle=c;ctx.setLineDash([8,5]);ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(12,Y(pr));ctx.lineTo(W-12,Y(pr));ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=c;ctx.font='bold 10px sans-serif';ctx.fillText(l,16,Y(pr)-5);
+  });
+  const cw=(W-24)/44;
+  for(let i=0;i<upto;i++){const k=candles[i],x=16+i*cw+cw*.3,up=k.c>=k.o,col=up?'#3ddc97':'#ff6b6b';
+    ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,Y(k.h));ctx.lineTo(x,Y(k.l));ctx.stroke();
+    const t=Y(Math.max(k.o,k.c)),b=Y(Math.min(k.o,k.c));ctx.fillStyle=col;
+    ctx.beginPath();ctx.roundRect(x-cw*.26,t,cw*.52,Math.max(3,b-t),2);ctx.fill();}
+  // trap marker
+  if(step>=2){const ti=25,x=16+ti*cw+cw*.3;
+    ctx.strokeStyle='#ffd166';ctx.lineWidth=2;ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.arc(x,Y(182.62),13,0,7);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#ffd166';ctx.font='bold 10px sans-serif';ctx.fillText('TRAP 🪤',x-24,Y(182.62)+28);}
+  if(step>=3){const ei=29,x=16+ei*cw+cw*.3;
+    ctx.fillStyle='#5ea0ff';ctx.font='bold 10px sans-serif';ctx.fillText('SNAP → ENTRY $183.40',x-40,Y(candles[29].c)-16);}
+  if(STEPS[step].levels){
+    ctx.fillStyle='#5ea0ff';ctx.font='bold 11px sans-serif';
+    ctx.fillText('BAIL $182.50',W-110,Y(182.5)+4);
+    ctx.strokeStyle='#5ea0ff';ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(12,Y(182.5));ctx.lineTo(W-12,Y(182.5));ctx.stroke();ctx.setLineDash([]);
+    ctx.fillText('TARGET $184.80 (trim)',W-150,Y(184.8)-4);
+    ctx.strokeStyle='#ffd166';ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(12,Y(184.8));ctx.lineTo(W-12,Y(184.8));ctx.stroke();ctx.setLineDash([]);
+  }
+}
+function render(){
+  document.getElementById('steps').innerHTML=STEPS.map((_,i)=>`<div class="st ${i<=step?'done':''}"></div>`).join('');
+  document.getElementById('sname').textContent=STEPS[step].n;
+  document.getElementById('stext').innerHTML=STEPS[step].t;
+  document.getElementById('nextbtn').textContent=step===STEPS.length-1?'Take the quiz →':'Next →';
+  draw();
+}
+function next(){
+  if(step<STEPS.length-1){step++;render();}
+  else{document.getElementById('walkbtns').style.display='none';
+    document.getElementById('sname').textContent='POP QUIZ';
+    document.getElementById('stext').textContent='';
+    document.getElementById('quiz').style.display='block';}
+}
+function prev(){if(step>0){step--;render();}}
+function answer(el,ok){
+  el.classList.add(ok?'right':'wrong');
+  if(ok){score++;document.getElementById('exp').style.display='block';
+    setTimeout(()=>{document.getElementById('quiz').style.display='none';document.getElementById('quiz2').style.display='block';},2600);}
+  else setTimeout(()=>el.classList.remove('wrong'),900);
+}
+function answer2(el,ok){
+  el.classList.add(ok?'right':'wrong');
+  if(ok){score++;document.getElementById('exp2').style.display='block';
+    setTimeout(()=>{document.getElementById('quiz2').style.display='none';
+      document.getElementById('final').style.display='block';
+      document.getElementById('finaltxt').innerHTML=`You scored <b>${score}/2</b>. ${score===2?'You spotted the trap AND waited for the snap — that\'s the whole game. Now grind the flashcards until it\'s automatic, then this drill becomes replay practice with real mornings.':'One slipped by — that\'s what practice is for. Run the flashcards, then take this drill again. The trap will still be here tomorrow.'}`},2600);}
+  else setTimeout(()=>el.classList.remove('wrong'),900);
+}
+render();
+</script>
+</body>
+</html>
