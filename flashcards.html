@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Candle Coach — Flashcards</title>
+<style>
+  :root{--bg:#101623;--panel:#1a2334;--panel2:#222e44;--line:#2c3a55;
+  --txt:#f0f3fa;--dim:#93a0b8;--green:#3ddc97;--red:#ff6b6b;--gold:#ffd166;--blue:#5ea0ff;--purple:#b388ff;}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+  body{background:var(--bg);color:var(--txt);min-height:100vh;display:flex;flex-direction:column;max-width:480px;margin:0 auto;padding:14px}
+  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .logo{font-weight:900;font-size:18px}.logo span{color:var(--gold)}
+  .back{font-size:12px;color:var(--blue);text-decoration:none;font-weight:700}
+  /* deck picker */
+  .decks{display:flex;flex-direction:column;gap:10px;flex:1;justify-content:center}
+  .deck{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:18px;cursor:pointer;display:flex;gap:14px;align-items:center}
+  .deck:active{transform:scale(.98)}
+  .deck .di{font-size:34px}
+  .deck .dt{font-weight:900;font-size:16px}
+  .deck .dd{font-size:12px;color:var(--dim);margin-top:3px;line-height:1.4}
+  .deck .lvl{font-size:10px;font-weight:900;padding:4px 10px;border-radius:10px;margin-left:auto;flex-shrink:0}
+  .l0{background:#123528;color:var(--green)} .l1{background:#1c2c47;color:var(--blue)} .l2{background:#3d2b10;color:var(--gold)}
+  .lock{opacity:.45}
+  .prog{font-size:12px;color:var(--dim);text-align:center;margin:6px 0 14px}
+  .dots{display:flex;gap:4px;justify-content:center;margin-bottom:14px;flex-wrap:wrap}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--line)}
+  .dot.done{background:var(--green)} .dot.cur{background:var(--gold);transform:scale(1.4)}
+  .cardwrap{perspective:1200px;flex:1;display:flex}
+  .card{position:relative;width:100%;min-height:340px;cursor:pointer;transform-style:preserve-3d;transition:transform .45s}
+  .card.flip{transform:rotateY(180deg)}
+  .face{position:absolute;inset:0;backface-visibility:hidden;border-radius:22px;padding:26px 22px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+  .front{background:linear-gradient(160deg,var(--panel2),var(--panel));border:2px solid var(--line)}
+  .back-face{background:linear-gradient(160deg,#123528,#14202f);border:2px solid var(--green);transform:rotateY(180deg)}
+  .face .tag{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:14px}
+  .face .q{font-size:23px;font-weight:900;line-height:1.3}
+  .face .a{font-size:16.5px;line-height:1.6;color:#d8e6de}
+  .face .a b{color:var(--gold)}
+  .tap{margin-top:20px;font-size:11px;color:var(--dim)}
+  .emoji{font-size:44px;margin-bottom:12px}
+  .btns{display:flex;gap:10px;margin:16px 0 8px}
+  .btn{flex:1;padding:14px;border:none;border-radius:14px;font-weight:800;font-size:14px;cursor:pointer}
+  .btn.again{background:#3d1a1e;color:var(--red)}
+  .btn.got{background:#123528;color:var(--green)}
+  .btn.ghost{background:var(--panel2);color:var(--dim);flex:0 0 auto;padding:14px 18px;border:1px solid var(--line)}
+  .btn.home{background:var(--panel2);color:var(--blue);border:1px solid var(--line);width:100%;margin-top:10px}
+  .donewrap{display:none;flex:1;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:30px}
+  .donewrap .big{font-size:56px;margin-bottom:14px}
+  .donewrap h2{font-size:24px;margin-bottom:8px}
+  .donewrap p{color:var(--dim);font-size:14px;line-height:1.6;margin-bottom:20px}
+  #picker{display:flex;flex-direction:column;flex:1}
+  #player{display:none;flex-direction:column;flex:1}
+</style>
+</head>
+<body>
+<div class="top"><div class="logo">CANDLE<span>COACH</span> 🃏</div><a class="back" href="index.html">← Playground</a></div>
+
+<!-- DECK PICKER -->
+<div id="picker">
+  <div style="text-align:center;color:var(--dim);font-size:13px;margin-bottom:14px">Learn in order. Master one level, unlock the next.</div>
+  <div class="decks">
+    <div class="deck" onclick="startDeck(0)"><div class="di">🌱</div><div><div class="dt">Level 0 — What IS Day Trading?</div><div class="dd">Zero knowledge assumed. What trading even is, how money is made and lost, the rules of the game. 14 cards.</div></div><div class="lvl l0">START HERE</div></div>
+    <div class="deck" onclick="startDeck(1)"><div class="di">🕯️</div><div><div class="dt">Level 1 — Reading Candles</div><div class="dd">Floors, ceilings, volume, chop, and the brain traps that kill beginners. 20 cards.</div></div><div class="lvl l1">LEVEL 1</div></div>
+    <div class="deck" onclick="startDeck(2)"><div class="di">🪤</div><div><div class="dt">Level 2 — The Trap &amp; Snap</div><div class="dd">Your first real strategy: the overnight trap, the snap-back, and the 1:2 rule. 12 cards.</div></div><div class="lvl l2">STRATEGY #1</div></div>
+  </div>
+</div>
+
+<!-- PLAYER -->
+<div id="player">
+  <div class="prog" id="prog"></div>
+  <div class="dots" id="dots"></div>
+  <div class="cardwrap" id="cw">
+    <div class="card" id="card" onclick="flip()">
+      <div class="face front"><div class="emoji" id="femoji"></div><div class="tag" id="ftag"></div><div class="q" id="fq"></div><div class="tap">tap to see the answer</div></div>
+      <div class="face back-face"><div class="tag">the answer</div><div class="a" id="fa"></div><div class="tap">got it? tap a button below</div></div>
+    </div>
+  </div>
+  <div class="donewrap" id="done">
+    <div class="big">🏁</div><h2>Deck complete!</h2><p id="donestats"></p>
+    <button class="btn got" style="width:100%" onclick="restart(true)">Shuffle &amp; go again</button>
+    <button class="btn home" onclick="goHome()">← Back to levels</button>
+  </div>
+  <div class="btns" id="btns">
+    <button class="btn ghost" onclick="shuffle()">🔀</button>
+    <button class="btn again" onclick="mark(false)">😵 Again</button>
+    <button class="btn got" onclick="mark(true)">✅ Got it</button>
+  </div>
+</div>
+
+<script>
+const DECKS=[
+[ // LEVEL 0 — WHAT IS DAY TRADING
+ {e:"🌱",t:"DAY ONE",q:"What is day trading?",a:"Buying and selling a stock <b>within the same day</b> — sometimes in minutes, never holding overnight. You're not investing in companies. You're surfing small price waves and getting out before the beach closes."},
+ {e:"⚔️",t:"DAY ONE",q:"Why does a price move at all?",a:"A tug of war. <b>More buyers than sellers → price rises. More sellers than buyers → price falls.</b> Every candle is just the scoreboard of that fight. Nothing magic — supply and demand, moving fast."},
+ {e:"📈",t:"DAY ONE",q:"How do you actually make money?",a:"Buy at one price, sell at a <b>higher</b> price, keep the difference. Example: buy 10 shares at $183.50, sell at $185 → made $15. Small wins, repeated carefully, add up. That's the whole business model."},
+ {e:"📉",t:"DAY ONE",q:"How do you LOSE money?",a:"Buy at one price, sell <b>lower</b>. Everyone knows this — yet beginners lose anyway. Why? Not bad math. <b>Bad behavior:</b> chasing, revenge trading, refusing to exit. The game is 20% charts, 80% controlling yourself."},
+ {e:"🏦",t:"THE PLAYERS",q:"What is a broker?",a:"The company that actually places your trades — the door into the market (Robinhood, Schwab, Alpaca…). You tell the app what you want, the broker executes it. A <b>paper account</b> is a broker account with fake money for practice."},
+ {e:"🕤",t:"THE PLAYERS",q:"When is the market open?",a:"US stocks: <b>9:30 AM – 4:00 PM New York time</b>, Monday–Friday. The first hour (9:30–10:30) is the wildest — most volume, most traps, most opportunity. That's why strategies start at the open."},
+ {e:"🛟",t:"SURVIVAL",q:"What is THE #1 rule of trading?",a:"<b>Protect the account.</b> Not 'make money' — protect what you have. A account that survives can trade tomorrow. Rule of thumb: never risk more than <b>1-2%</b> of your money on a single trade."},
+ {e:"🎲",t:"SURVIVAL",q:"Is day trading gambling?",a:"It CAN be — if you click buttons with no plan. The difference: a trader knows their <b>entry, exit, and bail price BEFORE buying</b>, and risks small. A gambler acts on feelings. Same app, different person."},
+ {e:"⚖️",t:"SURVIVAL",q:"What does '1 to 2R' mean?",a:"R = what you RISK. <b>1:2R means risk $1 to make $2.</b> Why it matters: at 1:2R you can be WRONG half the time and still make money. Win rate isn't everything — the ratio is the secret engine."},
+ {e:"🧮",t:"SURVIVAL",q:"Wait — I can be wrong half the time and still profit?",a:"Yes! 10 trades at 1:2R, only 4 winners: lose 6 × $10 = -$60, win 4 × $20 = +$80. <b>Net +$20 with a 40% win rate.</b> This is why pros obsess over risk-reward, not being right."},
+ {e:"🎓",t:"SURVIVAL",q:"Why do most beginners lose money?",a:"Three killers: <b>1)</b> trading too big, <b>2)</b> no bail price (holding losers, hoping), <b>3)</b> trading out of boredom or revenge. Notice: none are about charts. The charts are the easy part."},
+ {e:"📝",t:"SURVIVAL",q:"What is a 'setup'?",a:"A specific pattern you trade <b>the same way every time</b> — same conditions, same entry rules, same bail. One setup mastered beats ten setups dabbling. (Your first setup is waiting in Level 2 🪤)"},
+ {e:"💵",t:"REAL TALK",q:"How much money do I need to start for real?",a:"Honest answer: day trading real money in the US needs a <b>$25,000 account</b> (the PDT rule — 4+ day trades in 5 days under $25K freezes you). Below that, the playground + swing trades are your training ground."},
+ {e:"🗺️",t:"REAL TALK",q:"So what's the plan for ME?",a:"<b>1)</b> Learn the cards. <b>2)</b> Practice in the playground with fake money. <b>3)</b> Drill one strategy until your report card proves skill. <b>4)</b> Real money, tiny size, only after proof. Boring? Yes. Boring is how you survive long enough to win."}
+],
+[ // LEVEL 1 — CANDLES (core set, condensed from original)
+ {e:"🕯️",t:"THE BASICS",q:"What is a candle?",a:"One candle = one chunk of time (like 5 minutes). <b>Green</b> = price went UP. <b>Red</b> = price went DOWN. A candle is just a tiny scoreboard."},
+ {e:"〰️",t:"THE BASICS",q:"What are the skinny lines (wicks)?",a:"Wicks show how far price <b>tried</b> to go but couldn't hold. Long top wick = buyers pushed up and got slapped back. It's a rejected attempt."},
+ {e:"🧱",t:"FLOORS & CEILINGS",q:"What is a floor (support)?",a:"A price where buyers keep stopping the fall. Price hits it and bounces. <b>The more bounces, the stronger the floor.</b>"},
+ {e:"🚧",t:"FLOORS & CEILINGS",q:"What is a ceiling (resistance)?",a:"A price where sellers keep stopping the rise. Price bumps its head and falls back. More rejections = stronger ceiling."},
+ {e:"⚖️",t:"FLOORS & CEILINGS",q:"When do you trust a floor?",a:"After it holds <b>at least twice</b>. One bounce could be luck. Two bounces = buyers are really there."},
+ {e:"📣",t:"VOLUME",q:"What is volume?",a:"How many shares changed hands — the <b>crowd energy</b>. A move with big volume is real. A move with no volume is a rumor."},
+ {e:"🌀",t:"RHYTHM",q:"What is 'chop'?",a:"Price wiggling sideways with no direction — buyers and sellers tied. <b>Chop = NO TRADE.</b> Can't tell in 5 seconds if it's climbing or falling? It's chop. Sit out."},
+ {e:"🪜",t:"RHYTHM",q:"What does a healthy climb look like?",a:"<b>Climbing stairs:</b> higher step, small rest, higher step. Each dip stops HIGHER than the last. Straight up with no rests usually ends badly."},
+ {e:"🔪",t:"RHYTHM",q:"What's a falling knife?",a:"A stock dropping fast. Catching it because 'it's cheap now' is how accounts bleed. <b>Never buy while it's still falling.</b> Wait for a floor to form and hold twice."},
+ {e:"🚦",t:"THE SIGNAL",q:"What makes a GREEN light?",a:"Three things agree: <b>1)</b> floor holding, <b>2)</b> climbing rhythm, <b>3)</b> volume confirms. All three or nothing. Two of three = yellow = hands off."},
+ {e:"🟡",t:"THE SIGNAL",q:"What do you do on a YELLOW light?",a:"<b>Nothing.</b> Watch it, note the floor and ceiling — don't buy. Most money is lost acting on yellow lights."},
+ {e:"🎯",t:"THE TRADE",q:"What 3 prices do you know BEFORE buying?",a:"<b>Buy zone</b> (get in), <b>target</b> (cash out), <b>bail price</b> (admit wrong). Can't name all three before entering? That's gambling."},
+ {e:"✂️",t:"THE TRADE",q:"What is a bail price (stop)?",a:"The price where your idea is officially wrong — you exit with a small loss. <b>Small losses are the cost of business.</b> Big losses happen when people refuse to bail."},
+ {e:"💰",t:"THE TRADE",q:"How do you take profits?",a:"At your target — the ceiling you spotted BEFORE entering. <b>Nobody went broke cashing out a planned win.</b>"},
+ {e:"🧠",t:"YOUR BRAIN",q:"What is FOMO?",a:"Fear Of Missing Out — buying because it's ALREADY moving. FOMO buys are almost always near the top. <b>If you missed it, you missed it. Another bus comes in 10 minutes.</b>"},
+ {e:"😤",t:"YOUR BRAIN",q:"What is revenge trading?",a:"Taking a loss, getting mad, jumping back in to 'win it back.' The #1 account killer. After 2 losses in a day: <b>you're done. Walk away.</b>"},
+ {e:"🙏",t:"YOUR BRAIN",q:"Finish the rule: 'Hope is not ___'",a:"<b>...a strategy.</b> Holding a loser and hoping turns a small red day into a disaster. Your bail price exists so hope never gets a vote."},
+ {e:"🛟",t:"PRACTICE",q:"Why practice with fake money first?",a:"Every playground mistake costs $0 and teaches a lesson. The same mistake with real money costs real dollars. <b>You earn real money by proving skill on the report card — not by feeling ready.</b>"},
+ {e:"📓",t:"PRACTICE",q:"What matters more: one good day or the report card?",a:"<b>The report card.</b> Anyone gets lucky for a day. 4 straight weeks of smart decisions proves skill. That's why real money is gated behind consistency, never a hot streak."},
+ {e:"🏆",t:"PRACTICE",q:"What's a 'smart skip'?",a:"Seeing a bad setup and NOT trading it. Beginners think skill = picking winners. <b>Real skill = refusing losers.</b> The app tracks your skips because skipping IS trading."}
+],
+[ // LEVEL 2 — THE TRAP & SNAP
+ {e:"🪤",t:"TRAP & SNAP",q:"What is The Trap & Snap?",a:"Your first strategy. Price tricks everyone past the overnight high or low (<b>the trap</b>), springs their stop-losses, then <b>snaps back</b> the other way. You trade the snap, not the trap."},
+ {e:"🌏",t:"THE SETUP",q:"Why do Asia & London matter if I trade US stocks?",a:"While you slept, the world traded. Overnight sessions leave a <b>highest price and lowest price</b> — the overnight ceiling and floor. Thousands of stop-losses and breakout orders are parked at those two lines. That's the bait."},
+ {e:"✏️",t:"THE SETUP",q:"What do I do at 9 AM?",a:"Open the chart. <b>Draw the overnight high and overnight low.</b> Two lines. That's your whole morning prep. Now you wait — you don't predict which way, you let the trap show you."},
+ {e:"🪤",t:"THE TRAP",q:"What exactly is the 'trap' (the sweep)?",a:"Price pokes <b>past</b> the overnight high or low — just enough to trigger stop-losses and suck in breakout chasers — then <b>immediately falls back inside</b> the range. Everyone who chased is now trapped. Hence the name."},
+ {e:"🐋",t:"THE TRAP",q:"Why does the trap even happen?",a:"Big players need tons of shares to fill their orders. Where's a pile of shares for sale? <b>Where everyone's stop-losses sit.</b> Push price into the stops, fill up cheap, reverse. You're not the hunter — but you can follow the footprints."},
+ {e:"↩️",t:"THE SNAP",q:"What is the 'snap'?",a:"After the trap springs, price <b>snaps back</b> the other way — fast. Swept the low → snaps UP. Swept the high → snaps DOWN. The snap is your signal. <b>You trade the reversal, never the breakout.</b>"},
+ {e:"🔍",t:"THE ENTRY",q:"How do I time the entry?",a:"Zoom to the <b>1-minute chart</b>. After the sweep, wait for price to snap back inside the range AND break its first little 1-min floor/ceiling in the snap direction. That tiny break = the reversal is real. THAT's the entry trigger."},
+ {e:"🕳️",t:"THE ENTRY",q:"What's a 'fair value gap' (the IG guy's IFVG)?",a:"Fancy name, simple thing: price moves so fast it <b>skips prices</b> — a gap between candles. When price returns and that gap <b>flips sides</b> (ceiling becomes floor), pros call it an inversion. You can trade the snap without ever saying 'IFVG' out loud."},
+ {e:"🎯",t:"THE TRADE",q:"Where do I bail and where do I cash out?",a:"<b>Bail:</b> just past the trap's extreme (if the sweep low was $182.60, bail at $182.50 — if price goes back down there, the snap failed). <b>Target:</b> the opposite side of the overnight range. Small risk, big room — that's how you get 1:2R or better."},
+ {e:"✂️",t:"THE TRADE",q:"What does 'trim' mean?",a:"Sell <b>part</b> of your position at the target, keep a piece running in case it goes further. Half the win locked, half the lottery ticket kept. Trimming is how you stay calm — you've already won something."},
+ {e:"⏰",t:"TIMING",q:"When does The Trap & Snap happen?",a:"Usually <b>9:30–10:30 AM New York time</b> — the chaos hour, right after the open, when overnight levels get tested. By lunch the setup is gone. One window, one or two chances a day. That's a feature: it stops overtrading."},
+ {e:"📆",t:"THE GRIND",q:"The IG guy said 'six months of doing that.' Why?",a:"Because the edge isn't the setup — it's <b>you seeing it fast, every time, without flinching.</b> That takes ~100 reps. The playground's Trap & Snap drill gives you those reps on replayed mornings, $0 risk. Six months of tuition becomes six weeks of practice."}
+]];
+let deck=[], order=[], idx=0, flipped=false, curDeck=0;
+let stats={got:0,again:0,againList:[]};
+const $=id=>document.getElementById(id);
+function startDeck(d){
+  curDeck=d;deck=DECKS[d];order=deck.map((_,i)=>i);idx=0;
+  stats={got:0,again:0,againList:[]};
+  $('picker').style.display='none';$('player').style.display='flex';
+  $('cw').style.display='flex';$('btns').style.display='flex';$('dots').style.display='flex';$('done').style.display='none';
+  render();
+}
+function goHome(){$('player').style.display='none';$('picker').style.display='flex';}
+function render(){
+  const c=deck[order[idx]];
+  $('femoji').textContent=c.e;$('ftag').textContent=c.t;$('fq').textContent=c.q;$('fa').innerHTML=c.a;
+  $('card').classList.remove('flip');flipped=false;
+  $('prog').textContent=`Level ${curDeck} · Card ${idx+1} of ${order.length} — tap to flip`;
+  $('dots').innerHTML=order.map((_,i)=>`<div class="dot ${i<idx?'done':''} ${i===idx?'cur':''}"></div>`).join('');
+}
+function flip(){flipped=!flipped;$('card').classList.toggle('flip',flipped);}
+function mark(got){
+  const real=order[idx];
+  if(got)stats.got++;else{stats.again++;if(!stats.againList.includes(real))stats.againList.push(real);}
+  idx++;
+  if(idx>=order.length)finish();else render();
+}
+function finish(){
+  $('cw').style.display='none';$('btns').style.display='none';$('dots').style.display='none';$('prog').textContent='';
+  $('done').style.display='flex';
+  $('donestats').innerHTML=`You knew <b>${stats.got}</b> of ${order.length}.<br>${stats.againList.length?`${stats.againList.length} card(s) need another look — knowing your weak spots IS the skill.`:'Clean sweep.'}${curDeck<2?'<br><br>Next level unlocked — head back and keep climbing.':'<br><br>You know the strategy. Now go drill it in the playground.'}`;
+}
+function restart(shuf){
+  order=deck.map((_,i)=>i);if(shuf)order.sort(()=>Math.random()-0.5);
+  idx=0;stats={got:0,again:0,againList:[]};
+  $('cw').style.display='flex';$('btns').style.display='flex';$('dots').style.display='flex';$('done').style.display='none';
+  render();
+}
+function shuffle(){order.sort(()=>Math.random()-0.5);idx=0;render();}
+</script>
+</body>
+</html>
