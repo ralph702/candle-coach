@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Candle Coach — Quiz & Test</title>
+<style>
+  :root{--bg:#101623;--panel:#1a2334;--panel2:#222e44;--line:#2c3a55;--txt:#f0f3fa;--dim:#93a0b8;--green:#3ddc97;--red:#ff6b6b;--gold:#ffd166;--blue:#5ea0ff;--purple:#b388ff}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
+  body{background:var(--bg);color:var(--txt);min-height:100vh;padding:14px;max-width:820px;margin:0 auto}
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:var(--panel);border-radius:16px;margin-bottom:14px;border:1px solid var(--line)}
+  .back{font-size:13px;color:var(--blue);text-decoration:none;font-weight:800}
+  .logo{font-weight:900;font-size:20px}.logo span{color:var(--gold)}
+  .pill{font-size:12px;font-weight:800;padding:6px 14px;border-radius:20px;background:#123528;color:var(--green)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+  .card h3{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--dim);margin-bottom:12px}
+  .cat{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px;cursor:pointer}
+  .cat:hover{border-color:var(--blue)}
+  .cat .nm{font-size:17px;font-weight:900}
+  .cat .ds{font-size:12.5px;color:var(--dim);margin-top:3px;line-height:1.5}
+  .cat .st{text-align:right;font-size:12px;color:var(--dim);white-space:nowrap}
+  .cat .st b{font-size:18px;color:var(--gold)}
+  .bar{height:8px;border-radius:6px;background:var(--bg);overflow:hidden;margin-top:6px;width:120px;margin-left:auto}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--purple))}
+  .mode{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .mbtn{flex:1;min-width:140px;text-align:center;padding:16px;border-radius:14px;background:var(--panel);border:2px solid var(--line);cursor:pointer;font-weight:900;font-size:15px}
+  .mbtn:hover{border-color:var(--gold)}
+  .mbtn small{display:block;font-weight:600;font-size:11px;color:var(--dim);margin-top:3px}
+  .qtxt{font-size:19px;font-weight:800;line-height:1.5;margin-bottom:16px}
+  .opt{display:block;width:100%;text-align:left;background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;font-size:15px;font-weight:700;color:var(--txt);cursor:pointer}
+  .opt:hover{border-color:var(--blue)}
+  .opt.right{border-color:var(--green);background:#123528}
+  .opt.wrong{border-color:var(--red);background:#3d1a1e}
+  .fb{font-size:13.5px;line-height:1.6;padding:12px 14px;border-radius:12px;margin-bottom:12px}
+  .fb.ok{background:#123528;color:#cfe9dc}.fb.no{background:#3d1a1e;color:#f5c9cd}
+  button.btn{border:none;border-radius:12px;padding:12px 22px;font-size:15px;font-weight:900;cursor:pointer;background:var(--blue);color:#fff}
+  .btn.gold{background:var(--gold);color:#241a05}.btn.ghost{background:var(--panel2);color:var(--txt);border:1px solid var(--line)}
+  .prog{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+  .dot{width:22px;height:22px;border-radius:50%;background:var(--panel2);border:2px solid var(--line);font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center}
+  .dot.done{border-color:var(--green);color:var(--green)}
+  .dot.cur{border-color:var(--gold);color:var(--gold)}
+  .big{font-size:44px;font-weight:900;text-align:center;margin:10px 0}
+  .center{text-align:center}
+  .hidden{display:none!important}
+  .why{font-size:14px;color:#cfe0f5;line-height:1.7;text-align:center}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a class="back" href="index.html">← Home</a>
+  <div class="logo">CANDLE<span>COACH</span> · QUIZ</div>
+  <div class="pill" id="pillXp">PRACTICE</div>
+</div>
+
+<!-- CATEGORY LIST -->
+<div id="home">
+  <div class="card">
+    <h3>Pick a category — your progress is saved on this device</h3>
+    <div id="catList"></div>
+  </div>
+  <div class="card center">
+    <div class="why">🧠 <b>Quiz</b> = learn mode, instant feedback after every answer.<br>
+    📝 <b>Test</b> = exam mode, no hints, graded at the end, best score saved.<br>
+    🔁 <b>Review</b> = only the questions you've missed before, until you stop missing them.</div>
+  </div>
+</div>
+
+<!-- MODE PICKER -->
+<div id="modes" class="hidden">
+  <div class="card">
+    <h3 id="modeCatName">Category</h3>
+    <div class="mode">
+      <div class="mbtn" onclick="startRun('quiz')">🧠 Quiz<small>instant feedback, learn as you go</small></div>
+      <div class="mbtn" onclick="startRun('test')">📝 Test<small>no hints — graded at the end</small></div>
+      <div class="mbtn" id="mbtnReview" onclick="startRun('review')">🔁 Review<small>only your past mistakes</small></div>
+    </div>
+    <button class="btn ghost" onclick="goHome()">← All categories</button>
+  </div>
+</div>
+
+<!-- QUESTION SCREEN -->
+<div id="run" class="hidden">
+  <div class="card">
+    <div class="prog" id="dots"></div>
+    <div class="qtxt" id="qtxt"></div>
+    <div id="opts"></div>
+    <div id="fb"></div>
+    <button class="btn hidden" id="btnNext" onclick="nextQ()">Next →</button>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="done" class="hidden">
+  <div class="card">
+    <h3>Results</h3>
+    <div class="big" id="scoreBig"></div>
+    <div class="why" id="scoreWhy"></div>
+    <div id="missList" style="margin-top:14px"></div>
+    <div class="center" style="margin-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="btn gold" id="btnReview" onclick="startRun('review')">🔁 Review mistakes</button>
+      <button class="btn" onclick="startRun(curMode)">↺ Try again</button>
+      <button class="btn ghost" onclick="goHome()">All categories</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CATS = {
+  basics:{name:'🎒 The Basics', ds:'What day trading even is, how money is made and lost, the rules of the game.', qs:[
+    {q:'What is day trading?',o:['Buying stocks and holding them for years','Buying and selling within the SAME day, closing everything before 4 PM ET','Trading only at night','Buying whatever is trending online'],a:1,w:'Day traders open AND close every position the same day. Nothing is held overnight.'},
+    {q:'If you BUY (go long) 10 shares at $50 and sell at $53, you made…',o:['$3','$30','$53','$300'],a:1,w:'$3 profit per share × 10 shares = $30.'},
+    {q:'What does SHORTING a stock mean?',o:['Buying a small amount','Selling borrowed shares first, hoping the price FALLS so you buy back cheaper','Holding for a short time','Buying after hours'],a:1,w:'Short = profit when price drops. Sell high first, buy back low later.'},
+    {q:'You short 5 shares at $20 and buy back (cover) at $18. Result?',o:['−$10','+$10','+$2','−$2'],a:1,w:'$2 profit per share × 5 = $10. Price fell — shorts win when price falls.'},
+    {q:'What is a POSITION?',o:['Your trading chair setup','A trade you currently hold (shares you own or owe)','A stock tip','The market open'],a:1,w:'If you bought and haven’t sold yet, you have an open position.'},
+    {q:'What is the PDT rule?',o:['A tax rule','With under $25,000 you can only make 3 day trades in 5 business days in a margin account','A rule that bans shorting','Paper trading daily'],a:1,w:'Pattern Day Trader rule: under $25K = max 3 day trades per rolling 5 days. Big reason to practice first!'},
+    {q:'What does P&L stand for?',o:['Profit & Loss','Price & Level','Points & Lines','Paper & Live'],a:0,w:'Your P&L is how much you made or lost on a trade or a day.'},
+    {q:'Why do beginners paper trade (fake money) first?',o:['It’s required by law','Real brokers don’t accept beginners','To prove you can follow your rules BEFORE real money is at risk','Fake money trades faster'],a:2,w:'If you can’t be consistent with fake money, real money just loses faster.'},
+    {q:'What is VOLUME?',o:['How loud the trading floor is','How many shares changed hands in a period','The stock price','The market cap'],a:1,w:'High volume = lots of interest. Big moves on big volume are more trustworthy.'},
+    {q:'The market’s regular session runs…',o:['24 hours','9:30 AM – 4:00 PM ET','8 AM – 8 PM ET','Only at lunch'],a:1,w:'Regular hours: 9:30 to 4 Eastern. Premarket and after-hours exist but are thinner and riskier.'}
+  ]},
+  candles:{name:'🕯️ Reading Candles', ds:'What each candle tells you — bodies, wicks, floors, ceilings.', qs:[
+    {q:'A GREEN candle means…',o:['Price went down during that period','Price CLOSED higher than it OPENED','Volume was high','The market is closed'],a:1,w:'Green = close > open. Red = close < open. Each candle is one time period (like 5 minutes).'},
+    {q:'The fat part of the candle is called the…',o:['Wick','Body','Tail','Shadow'],a:1,w:'Body = open-to-close range. The thin lines are wicks (highs and lows).'},
+    {q:'A long wick sticking DOWN below the body suggests…',o:['Sellers pushed down but buyers fought back up','Nobody traded','The stock will definitely crash','The exchange glitched'],a:0,w:'A long lower wick = price got pushed down and REJECTED. Buyers showed up.'},
+    {q:'What is a FLOOR (support)?',o:['The lowest price ever','A price level where buyers keep stepping in and stopping the fall','The market open price','A government price limit'],a:1,w:'Floors are where bounces happen — until they break. Watch how price behaves AT the level.'},
+    {q:'What is a CEILING (resistance)?',o:['A level where sellers keep showing up and capping the rise','The highest price of the year','The price at market close','A guaranteed top'],a:0,w:'Ceilings cap rallies. Multiple rejections at the same price = a real level.'},
+    {q:'A candle with a tiny body and long wicks both sides means…',o:['Huge conviction','Indecision — neither side won that period','The market closed','A breakout'],a:1,w:'Tiny body = open ≈ close. Long wicks both ways = both sides tried and failed. Indecision.'},
+    {q:'Five green candles in a row on rising volume usually means…',o:['Definitely time to buy more','Strong buying pressure — but also ask how far it’s already run','The stock must fall now','Volume doesn’t matter'],a:1,w:'Momentum is real, but late entries chase. The best entries were earlier.'},
+    {q:'Price touches the floor three times and bounces each time. That floor is…',o:['Meaningless','Weakening each touch automatically','Confirmed — lots of buyers defend it','A ceiling'],a:2,w:'Repeated successful defenses = a level worth respecting. If it finally BREAKS, that’s information too.'},
+    {q:'What does a BREAKOUT mean?',o:['Price pushes THROUGH a ceiling that held before','The market opens','A stock splits','Your app crashes'],a:0,w:'Breakout = through resistance. Real breakouts usually come with a volume surge.'},
+    {q:'The first 30 minutes after the open (9:30–10:00 ET) are usually…',o:['The calmest','The wildest — biggest volume and fastest moves of the day','Closed','Only for professionals by law'],a:1,w:'The open sets the day’s personality. That’s why the Trap & Snap uses that first range.'}
+  ]},
+  lingo:{name:'🗣️ The Lingo', ds:'Talk like a trader — the slang and shorthand you’ll hear everywhere.', qs:[
+    {q:'“BULL” and “BULLISH” mean…',o:['Expecting prices to fall','Expecting prices to RISE','A big company','A fast trade'],a:1,w:'Bulls attack by thrusting horns UP. Bears swipe DOWN. Bullish = optimistic.'},
+    {q:'“BEARISH” means you think price will…',o:['Rise','Fall','Go sideways','Get acquired'],a:1,w:'Bearish = expecting a drop. A bearish trader looks for shorts.'},
+    {q:'What does “LONG” mean?',o:['A trade held for months','You BOUGHT — you profit if price rises','A tall candle','A limit order'],a:1,w:'Long = own it, want it up. Short = sold it, want it down.'},
+    {q:'“STOP LOSS” (your BAIL price) is…',o:['The price where you quit the app','A pre-decided exit that cuts a losing trade small','A government halt','Your profit target'],a:1,w:'Pros decide the bail BEFORE entering. Small planned losses = survival.'},
+    {q:'“R” or “R-multiple” (like 2R) measures…',o:['The stock rating','Profit in units of what you risked. Risk $50, make $100 = +2R','The interest rate','Revenue'],a:1,w:'Thinking in R keeps risk consistent: every trade risks 1R, wins aim for 2R+.'},
+    {q:'A “FAKEOUT” (bull/bear trap) is…',o:['Fake news','Price pokes past a level, sucks people in, then snaps back the other way','A typo in the chart','After-hours trading'],a:1,w:'The trap is the fuel for the Trap & Snap strategy — trapped traders’ exits push the reversal.'},
+    {q:'“PAPER TRADING” means…',o:['Trading with printed stock certificates','Practice trading with fake money','Trading paper-company stocks','Mailing orders'],a:1,w:'Everything in this app is paper trading. Zero real dollars at risk.'},
+    {q:'“FALLING KNIFE” means…',o:['A stock in freefall — catching it (buying) usually cuts you','A sharp profitable short','A kitchen stock','A quick bounce'],a:0,w:'Don’t buy something just because it’s falling hard. Wait for it to stop falling and prove a floor.'},
+    {q:'“GAP UP / GAP DOWN” happens when…',o:['Price opens far above/below yesterday’s close','A stock splits','Volume doubles','The market halts'],a:0,w:'Overnight news moves price before the open. Gaps = the opening auction repricing everything.'},
+    {q:'“TREND IS YOUR FRIEND” means…',o:['Be social with other traders','Trades in the direction of the main move work more often than fights against it','Trends never end','Only trade trending topics'],a:1,w:'Fighting the trend (buying a dump, shorting a rip) is how beginners donate money.'}
+  ]},
+  trap:{name:'🪤 Trap & Snap Strategy', ds:'The IG strategy, translated: morning range → sweep → snap back → 1:2R trim.', qs:[
+    {q:'The strategy starts by marking…',o:['Random prices','The HIGH and LOW of the morning’s first 30 minutes','Yesterday’s close only','Whole dollar prices'],a:1,w:'Your range = the morning floor and ceiling. Everything keys off those two lines.'},
+    {q:'A “SWEEP” (the trap) is when…',o:['Price touches the floor exactly','Price pokes PAST the floor or ceiling, tricking breakout traders in','Volume disappears','The market closes early'],a:1,w:'The sweep past the level is the trap — breakout chasers get in, then get stuck.'},
+    {q:'The “SNAP” — your actual entry signal — is when…',o:['Price keeps running past the level','Price closes back INSIDE the range after the sweep','You feel confident','Two red candles appear'],a:1,w:'Snap back inside = the breakout FAILED. Trapped traders now fuel the move the other way.'},
+    {q:'After a sweep of the morning LOW that snaps back up, you go…',o:['SHORT','LONG','To lunch','All-in'],a:1,w:'Low swept + snap up = the dump failed → long, aiming back across the range.'},
+    {q:'Your BAIL (stop loss) on a long after a low-sweep belongs…',o:['Above the ceiling','Just under the sweep’s lowest point','At your entry','Wherever feels OK'],a:1,w:'If price takes out the trap low again, the snap idea is WRONG. Out small.'},
+    {q:'“1:2R trim” means…',o:['Risk 2 to make 1','Risk 1 to make 2 — e.g. risk $0.50/share to try for $1.00/share, trimming some at the target','Trade for 2 minutes','Use 2 monitors'],a:1,w:'You only take trades where the target is at least 2× your risk. That math wins even with a 40% hit rate.'},
+    {q:'The best window for this strategy is usually…',o:['9:30–10:30 AM ET','3:55–4:00 PM ET','Lunch hour','Overnight'],a:0,w:'Morning = volume and traps. Midday chop is where this strategy goes to die.'},
+    {q:'If NO trap forms by 10:30 AM, the correct trade is…',o:['Enter anyway, you’re due','NO TRADE — flat is a position','Double your size','Switch to buying whatever’s green'],a:1,w:'Roughly a quarter of days have no setup. Skipping them is the strategy working, not failing.'},
+    {q:'Why does the snap-back move happen so fast?',o:['Algorithms love round numbers','Trapped breakout traders are forced to exit, and their exits push price the other way','News anchors','The market makers get bored'],a:1,w:'Cause and effect: their pain = your fuel. Understanding WHO is trapped is the whole edge.'},
+    {q:'The #1 way beginners ruin this strategy is…',o:['Using 5-minute candles','Entering on the SWEEP instead of waiting for the SNAP back inside','Trading liquid stocks','Setting a stop loss'],a:1,w:'The sweep alone is NOT the signal — price can keep running. The snap back inside is the proof.'}
+  ]}
+};
+const ORDER=['basics','candles','lingo','trap'];
+let curCat=null, curMode='quiz', Q=[], qi=0, score=0, misses=[], answered=false;
+
+function prog(){ try{return JSON.parse(localStorage.getItem('cc_progress')||'{}');}catch(e){return{};} }
+function saveProg(p){ localStorage.setItem('cc_progress',JSON.stringify(p)); }
+
+function renderHome(){
+  const p=prog(); p.quiz=p.quiz||{};
+  document.getElementById('catList').innerHTML=ORDER.map(k=>{
+    const c=CATS[k], s=p.quiz[k]||{best:0,taken:0,wrong:[]};
+    const pct=s.best||0;
+    return `<div class="cat" onclick="pickCat('${k}')">
+      <div><div class="nm">${c.name}</div><div class="ds">${c.ds}</div></div>
+      <div class="st"><b>${s.taken?Math.round(pct)+'%':'—'}</b> best<br>${s.taken||0} taken · ${(s.wrong||[]).length} to review
+      <div class="bar"><i style="width:${s.taken?pct:0}%"></i></div></div></div>`;
+  }).join('');
+}
+function pickCat(k){
+  curCat=k;
+  const p=prog(); const s=(p.quiz&&p.quiz[k])||{wrong:[]};
+  document.getElementById('modeCatName').textContent=CATS[k].name+' — pick your mode';
+  const rb=document.getElementById('mbtnReview');
+  rb.style.opacity=(s.wrong||[]).length?1:0.45;
+  rb.querySelector('small').textContent=(s.wrong||[]).length? s.wrong.length+' missed questions waiting':'nothing to review yet — go make some mistakes!';
+  show('modes');
+}
+function startRun(mode){
+  const p=prog(); const s=(p.quiz&&p.quiz[curCat])||{wrong:[]};
+  if(mode==='review'&&!(s.wrong||[]).length)return;
+  curMode=mode; qi=0; score=0; misses=[];
+  let idxs=CATS[curCat].qs.map((_,i)=>i);
+  if(mode==='review') idxs=idxs.filter(i=>s.wrong.includes(i));
+  if(mode==='test') idxs=idxs.sort(()=>Math.random()-0.5);
+  Q=idxs;
+  show('run'); renderQ();
+}
+function renderQ(){
+  answered=false;
+  const q=CATS[curCat].qs[Q[qi]];
+  document.getElementById('dots').innerHTML=Q.map((_,i)=>`<div class="dot ${i<qi?'done':i===qi?'cur':''}">${i+1}</div>`).join('');
+  document.getElementById('qtxt').textContent=q.q;
+  document.getElementById('fb').innerHTML='';
+  document.getElementById('btnNext').classList.add('hidden');
+  document.getElementById('opts').innerHTML=q.o.map((o,i)=>`<button class="opt" id="opt${i}" onclick="answer(${i})">${String.fromCharCode(65+i)}. ${o}</button>`).join('');
+}
+function answer(i){
+  if(answered)return; answered=true;
+  const q=CATS[curCat].qs[Q[qi]];
+  const right=i===q.a;
+  if(right)score++; else misses.push(Q[qi]);
+  if(curMode==='test'){
+    document.querySelectorAll('.opt').forEach(b=>b.style.opacity=0.6);
+    document.getElementById('opt'+i).style.opacity=1;
+    document.getElementById('opt'+i).style.borderColor='var(--gold)';
+  }else{
+    document.getElementById('opt'+q.a).classList.add('right');
+    if(!right)document.getElementById('opt'+i).classList.add('wrong');
+    document.getElementById('fb').innerHTML=`<div class="fb ${right?'ok':'no'}">${right?'✅ Correct! ':'❌ Not quite. '}${q.w}</div>`;
+  }
+  document.getElementById('btnNext').classList.remove('hidden');
+  document.getElementById('btnNext').textContent=qi===Q.length-1?'See results →':'Next →';
+}
+function nextQ(){ if(qi<Q.length-1){qi++;renderQ();}else finish(); }
+function finish(){
+  const total=Q.length, pct=Math.round(100*score/total);
+  const p=prog(); p.quiz=p.quiz||{}; const s=p.quiz[curCat]=p.quiz[curCat]||{best:0,taken:0,wrong:[]};
+  s.taken=(s.taken||0)+1;
+  if(curMode==='test') s.best=Math.max(s.best||0,pct);
+  else s.best=Math.max(s.best||0, Math.round((s.best||0)*0 + pct*0.5 + (s.best||0)*0.5));
+  // wrong list: add new misses, remove ones answered right in review
+  let wrong=new Set(s.wrong||[]);
+  misses.forEach(i=>wrong.add(i));
+  if(curMode==='review'){ Q.forEach(i=>{ if(!misses.includes(i)) wrong.delete(i); }); }
+  s.wrong=[...wrong];
+  saveProg(p);
+  document.getElementById('scoreBig').textContent=score+' / '+total;
+  document.getElementById('scoreBig').style.color=pct>=80?'var(--green)':pct>=50?'var(--gold)':'var(--red)';
+  document.getElementById('scoreWhy').innerHTML =
+    pct>=90 ? '👑 You actually know this stuff. Next category!' :
+    pct>=70 ? '💪 Solid. Review the misses below and this category is yours.' :
+    pct>=40 ? '📚 Getting there — the explanations above are the lesson. Hit Review mistakes.' :
+              '🌱 Everyone starts here. Read the misses, try the flashcards, come back.';
+  document.getElementById('missList').innerHTML = misses.length? '<h3 style="font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--dim);margin-bottom:10px">You missed:</h3>'+misses.map(i=>{
+    const q=CATS[curCat].qs[i];
+    return `<div class="fb no" style="margin-bottom:8px"><b>${q.q}</b><br>✅ ${q.o[q.a]}<br><span style="opacity:.85">${q.w}</span></div>`;
+  }).join('') : '<div class="fb ok">🎯 Clean sweep — nothing missed!</div>';
+  document.getElementById('btnReview').style.display=misses.length?'inline-block':'none';
+  show('done');
+}
+function show(id){
+  ['home','modes','run','done'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function goHome(){ renderHome(); show('home'); }
+const pre=new URLSearchParams(location.search).get('cat');
+renderHome();
+if(pre&&CATS[pre])pickCat(pre);
+</script>
+</body>
+</html>

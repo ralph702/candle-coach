@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Candle Coach — The Lingo</title>
+<style>
+  :root{--bg:#101623;--panel:#1a2334;--panel2:#222e44;--line:#2c3a55;--txt:#f0f3fa;--dim:#93a0b8;--green:#3ddc97;--red:#ff6b6b;--gold:#ffd166;--blue:#5ea0ff;--purple:#b388ff}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
+  body{background:var(--bg);color:var(--txt);min-height:100vh;padding:14px;max-width:820px;margin:0 auto}
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:var(--panel);border-radius:16px;margin-bottom:14px;border:1px solid var(--line)}
+  .back{font-size:13px;color:var(--blue);text-decoration:none;font-weight:800}
+  .logo{font-weight:900;font-size:20px}.logo span{color:var(--gold)}
+  .pill{font-size:12px;font-weight:800;padding:6px 14px;border-radius:20px;background:#123528;color:var(--green)}
+  #search{width:100%;background:var(--panel);border:2px solid var(--line);color:var(--txt);border-radius:14px;padding:14px 18px;font-size:16px;font-weight:700;margin-bottom:14px}
+  #search:focus{outline:none;border-color:var(--blue)}
+  .grp{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:var(--gold);font-weight:900;margin:20px 0 10px}
+  .term{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;cursor:pointer}
+  .term:hover{border-color:var(--blue)}
+  .term .t{font-weight:900;font-size:16px}
+  .term .short{font-size:13px;color:var(--dim);margin-top:2px}
+  .term .full{display:none;font-size:14px;line-height:1.7;color:#e8edf9;margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
+  .term.open .full{display:block}
+  .term .full b{color:var(--gold)}
+  .ex{background:var(--panel2);border-radius:10px;padding:10px 12px;margin-top:8px;font-size:13px;color:#cfe0f5}
+  .cta{display:block;text-align:center;background:linear-gradient(90deg,var(--blue),var(--purple));color:#fff;text-decoration:none;font-weight:800;font-size:14px;padding:14px;border-radius:14px;margin-top:16px}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a class="back" href="index.html">← Home</a>
+  <div class="logo">CANDLE<span>COACH</span> · LINGO</div>
+  <div class="pill">TALK LIKE A TRADER</div>
+</div>
+
+<input id="search" placeholder="🔍 Type a word — like “short”, “wick”, “stop loss”…" oninput="filter(this.value)">
+<div id="list"></div>
+<a class="cta" href="quiz.html?cat=lingo">🧠 Think you know it? Take the Lingo quiz →</a>
+
+<script>
+const GROUPS=[
+ {g:'🎒 The Basics',terms:[
+  ['Day trading','Buying and selling within the same day — nothing held overnight.','You buy NVDA at 10 AM, sell at 11:30 AM. That’s a day trade. The goal is small, repeatable wins — not lottery tickets.'],
+  ['Position','A trade you’re currently IN.','Own 5 shares right now? That’s your position. “Flat” means no position — and flat is a perfectly good position.'],
+  ['P&L','Profit & Loss — what you made or lost.','“My P&L today is +$45” = you’re up forty-five bucks. Track it every session.'],
+  ['Paper trading','Practice trading with fake money.','Everything in this app is paper trading. You only graduate to real money after your journal proves consistency.'],
+  ['Volume','How many shares changed hands.','A breakout on HUGE volume is believable. A breakout on tiny volume is usually fake.'],
+  ['Liquidity','How easily you can buy/sell without moving the price.','NVDA is super liquid — millions of shares trade daily. Tiny unknown stocks can trap you: no buyer when you want out.'],
+  ['Market hours','Regular session: 9:30 AM – 4:00 PM ET.','Premarket (4–9:30 AM) and after-hours (4–8 PM) exist, but they’re thin and wild. Beginners: stick to regular hours.'],
+  ['PDT rule','Under $25K in a margin account = max 3 day trades per 5 business days.','Pattern Day Trader rule. It’s why you should practice first and pick your real trades carefully later.']
+ ]},
+ {g:'💰 Orders & Money',terms:[
+  ['Long','You BOUGHT — you profit when price rises.','Long 10 shares at $50, sell at $53 = +$30. The classic “buy low, sell high.”'],
+  ['Short','You SOLD borrowed shares — you profit when price FALLS.','Short at $20, buy back (cover) at $18 = +$2/share. Yes, betting on a fall is legal and normal.'],
+  ['Cover','Closing a short by buying the shares back.','“I covered at $18” = exited my short there.'],
+  ['Entry / Exit','The price where you get in / get out.','Pros plan BOTH before entering. Beginners plan the entry and wing the exit — that’s the leak.'],
+  ['Stop loss (BAIL price)','A pre-decided exit that cuts a loser small.','“Bail if it drops under $182.70” — decided BEFORE entering. Small planned losses are the cost of staying in the game.'],
+  ['Target','Your pre-decided profit exit.','“Target $185” — decided before entering. Greed moves targets mid-trade; discipline doesn’t.'],
+  ['Market order','“Get me in/out NOW at whatever price.”','Fast but you take what’s offered. Fine for liquid stocks, dangerous in thin ones.'],
+  ['Limit order','“Only fill me at MY price or better.”','You set $50.00 — you’ll never pay more. Might not fill at all. Control over speed.'],
+  ['Slippage','The gap between the price you wanted and what you got.','You clicked buy at $50.00, filled at $50.12. That 12 cents is slippage — worse in fast or thin markets.'],
+  ['Size','How many shares/dollars you put into a trade.','Sizing is the #1 survival skill: risk a small fixed amount per trade so no single loss can hurt you.']
+ ]},
+ {g:'🕯️ Candles & Charts',terms:[
+  ['Candlestick','One bar showing open, high, low, close for a time period.','A 5-minute candle = everything that happened in those 5 minutes, in one picture.'],
+  ['Body','The fat part: open-to-close range.','Big green body = buyers dominated that period. Tiny body = nobody won.'],
+  ['Wick (shadow)','The thin lines: the extremes price visited but didn’t hold.','Long lower wick = sellers pushed down, buyers shoved it back. Rejection, in a picture.'],
+  ['Green / Red candle','Close higher / lower than the open.','Green ≠ “price went up from yesterday” — it’s about THIS candle’s open vs close.'],
+  ['Floor (support)','A price where buyers keep showing up.','Price bounced at $182.80 three times = a real floor. Floors you can trust… until they break.'],
+  ['Ceiling (resistance)','A price where sellers keep showing up.','Every rally dies at $185? That’s a ceiling. Breaking through it is a breakout.'],
+  ['Breakout','Price pushes THROUGH a level that held before.','Real breakouts come with volume. Weak-volume breakouts are usually fakeouts.'],
+  ['Chop','Sideways, indecisive movement with no direction.','Chop is where strategies die and accounts bleed. Recognize it early, trade less.']
+ ]},
+ {g:'🗣️ Trader Talk',terms:[
+  ['Bull / Bullish','Expecting prices to RISE.','Bulls thrust horns UP. “I’m bullish on AMD” = I think it goes up.'],
+  ['Bear / Bearish','Expecting prices to FALL.','Bears swipe claws DOWN. Bearish traders hunt shorts.'],
+  ['Fakeout (trap)','Price pokes past a level, sucks people in, snaps back.','The bull trap / bear trap. Breakout buyers get stuck — their forced exits fuel the reversal. The heart of Trap & Snap.'],
+  ['Falling knife','A stock in freefall. Catching it cuts you.','“Don’t catch a falling knife” = don’t buy just because it’s crashing. Wait for the floor to PROVE itself.'],
+  ['Gap up / gap down','Opening far above / below yesterday’s close.','Earnings, news, or fear overnight re-prices the stock before you can react.'],
+  ['Trend day','A day that moves mostly one direction, start to finish.','AMD’s +5.5% Friday was a trend day up. On trend days, fighting the trend is expensive.'],
+  ['Reversal','When the move flips direction.','The Trap & Snap is a reversal strategy: trap forms, price reverses back through the range.'],
+  ['Chasing','Entering late because you’re scared to miss out.','Buying after 5 green candles because it “can’t stop” — that’s chasing, and it’s how beginners donate.']
+ ]},
+ {g:'🛡️ Risk & Survival',terms:[
+  ['R / R-multiple','Profit measured in units of what you risked.','Risk $50, make $100 = +2R. The Trap & Snap aims for 1:2R — risk 1 to make 2.'],
+  ['Risk per trade','The fixed small amount you allow yourself to lose.','1% of a $500 account = $5 risk per trade. Boring? Yes. Still here next year? Also yes.'],
+  ['Overtrading','Taking trades because you’re bored or emotional, not because there’s a setup.','The fix: a written setup checklist. No setup = no trade. Skipping IS a skill.'],
+  ['Revenge trading','Trading to “win back” a loss immediately.','The account killer. Loss → walk away → journal it → come back tomorrow.'],
+  ['Edge','The reason your strategy makes money over many trades.','Trap & Snap’s edge: trapped traders’ forced exits push the snap. No edge = gambling with extra steps.'],
+  ['Journal','A log of every trade: setup, entry, exit, why, grade.','Your journal is your coach. This app saves one automatically — export it, read it weekly.']
+ ]}
+];
+const list=document.getElementById('list');
+function render(filterTxt){
+  const f=(filterTxt||'').toLowerCase();
+  list.innerHTML=GROUPS.map(gr=>{
+    const ts=gr.terms.filter(t=>!f||t[0].toLowerCase().includes(f)||t[1].toLowerCase().includes(f)||t[2].toLowerCase().includes(f));
+    if(!ts.length)return'';
+    return `<div class="grp">${gr.g}</div>`+ts.map(t=>`
+      <div class="term" onclick="this.classList.toggle('open')">
+        <div class="t">${t[0]}</div><div class="short">${t[1]}</div>
+        <div class="full"><b>${t[1]}</b><div class="ex">💬 ${t[2]}</div></div>
+      </div>`).join('');
+  }).join('')||'<div class="grp">No matches — try another word.</div>';
+}
+function filter(v){render(v);}
+render('');
+</script>
+</body>
+</html>
