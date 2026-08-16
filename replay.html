@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Candle Coach — Replay Engine (ACADEMY-1)</title>
+<style>
+  :root{--bg:#101623;--panel:#1a2334;--panel2:#222e44;--line:#2c3a55;
+  --txt:#f0f3fa;--dim:#93a0b8;--green:#3ddc97;--red:#ff6b6b;--gold:#ffd166;--blue:#5ea0ff;}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
+  body{background:var(--bg);color:var(--txt);min-height:100vh;max-width:900px;margin:0 auto;padding:14px}
+  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+  .logo{font-weight:900;font-size:18px}.logo span{color:var(--gold)}
+  .nav a{font-size:12px;color:var(--blue);text-decoration:none;font-weight:700;margin-left:12px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
+  h3{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--dim);margin-bottom:10px}
+  /* session picker */
+  .sess{display:flex;justify-content:space-between;align-items:center;background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:14px;margin-bottom:8px;cursor:pointer}
+  .sess:hover{border-color:var(--gold)}
+  .sess .nm{font-weight:800;font-size:15px}
+  .sess .ds{font-size:12px;color:var(--dim);margin-top:2px}
+  .sess .tag{font-size:10px;font-weight:900;padding:4px 10px;border-radius:10px;background:#3d2b10;color:var(--gold);flex-shrink:0;margin-left:10px}
+  /* chart */
+  canvas{width:100%;display:block;background:var(--panel2);border-radius:14px}
+  .hud{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--dim);margin-top:8px;flex-wrap:wrap;gap:6px}
+  .hud b{color:var(--txt)}
+  .spacebar{background:var(--gold);color:#241a05;font-weight:900;border:none;border-radius:12px;padding:10px 22px;font-size:14px;cursor:pointer}
+  .skipb{background:var(--panel2);color:var(--dim);border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer}
+  /* pre-commit gate */
+  .gate{background:#241d10;border:2px solid var(--gold);border-radius:16px;padding:16px;margin-top:12px}
+  .gate h4{color:var(--gold);font-size:14px;margin-bottom:4px}
+  .gate p{font-size:12.5px;color:#e8dcc0;margin-bottom:12px;line-height:1.5}
+  .gate label{font-size:11px;color:var(--dim);display:block;margin:8px 0 3px;font-weight:700}
+  .gate input,.gate select,.gate textarea{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:10px;font-size:14px}
+  .gate textarea{resize:none;height:56px}
+  .row2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .commit{width:100%;background:var(--green);color:#08130c;border:none;border-radius:12px;padding:13px;font-weight:900;font-size:15px;margin-top:12px;cursor:pointer}
+  .err{color:var(--red);font-size:12px;font-weight:700;margin-top:8px;display:none}
+  /* position hud */
+  .pos{display:none;margin-top:12px;background:#12233d;border:1px solid var(--blue);border-radius:12px;padding:12px;font-size:13px;line-height:1.7}
+  /* result */
+  .result{display:none;margin-top:12px;border-radius:16px;padding:18px;text-align:center}
+  .result.win{background:#123528;border:2px solid var(--green)}
+  .result.loss{background:#3d1a1e;border:2px solid var(--red)}
+  .result.flat{background:var(--panel2);border:2px solid var(--line)}
+  .result .big{font-size:26px;font-weight:900;margin-bottom:4px}
+  .result .r{font-size:15px;margin-bottom:10px}
+  .axes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;text-align:left}
+  .ax{background:rgba(0,0,0,.25);border-radius:10px;padding:10px;font-size:12px}
+  .ax b{display:block;margin-bottom:4px;font-size:12.5px}
+  .ax button{margin-right:6px;padding:5px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--dim);font-weight:700;cursor:pointer;font-size:12px}
+  .ax button.selY{background:#123528;color:var(--green);border-color:var(--green)}
+  .ax button.selN{background:#3d1a1e;color:var(--red);border-color:var(--red)}
+  .savej{width:100%;margin-top:12px;background:var(--blue);color:#0a1526;border:none;border-radius:12px;padding:12px;font-weight:900;cursor:pointer}
+  /* journal */
+  .jrow{display:flex;justify-content:space-between;font-size:12.5px;padding:9px 4px;border-bottom:1px solid var(--line)}
+  .jrow:last-child{border-bottom:none}
+  .hidden{display:none!important}
+  .hint{font-size:11.5px;color:var(--dim);margin-top:8px;line-height:1.5}
+  kbd{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:1px 7px;font-size:11px}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="logo">CANDLE<span>COACH</span> 🎞️ REPLAY</div>
+  <div class="nav"><a href="index.html">Home</a><a href="drill.html">Drill</a><a href="flashcards.html">Cards</a></div>
+</div>
+
+<!-- SESSION PICKER -->
+<div class="card" id="picker">
+  <h3>Choose a session — outcomes hidden, like real life</h3>
+  <div id="sesslist"></div>
+  <div class="hint">Some sessions have a real Trap &amp; Snap. Some are traps that become real breakdowns. Some are chop with <b>no trade at all</b> — passing correctly scores as a win. You won't know which until the end. Just like Tuesdays.</div>
+</div>
+
+<!-- REPLAY -->
+<div class="card hidden" id="stage">
+  <h3 id="sessname"></h3>
+  <canvas id="cv" height="320"></canvas>
+  <div class="hud">
+    <div>🕐 <b id="clock">9:30 AM</b> · Bar <b id="barct">0</b></div>
+    <div>Last: <b id="lastpx">—</b></div>
+    <div>
+      <button class="skipb" id="skipbtn">✋ Skip / no trade</button>
+      <button class="spacebar" id="nextbtn">NEXT BAR ␣</button>
+    </div>
+  </div>
+
+  <!-- FORCED PRE-COMMITMENT -->
+  <div class="gate hidden" id="gate">
+    <h4>⚠️ TRAP ZONE — COMMIT BEFORE YOU SEE MORE</h4>
+    <p>Price is near a premarket extreme. Write your call <b>before</b> the next candle exists. No commit, no advance. Or press Skip — a good skip is a good trade.</p>
+    <label>Direction</label>
+    <select id="g-dir"><option value="long">LONG (I think it snaps up)</option><option value="short">SHORT (I think it snaps down)</option></select>
+    <div class="row2">
+      <div><label>Entry $</label><input id="g-entry" type="number" step="0.01"></div>
+      <div><label>Bail $ (stop)</label><input id="g-bail" type="number" step="0.01"></div>
+      <div><label>Target $</label><input id="g-target" type="number" step="0.01"></div>
+    </div>
+    <label>Why? (one sentence — be honest, the journal keeps receipts)</label>
+    <textarea id="g-why" placeholder="e.g. swept the premarket low and closed back inside, volume rising"></textarea>
+    <button class="commit" id="commitbtn">LOCK IT IN →</button>
+    <div class="err" id="gerr"></div>
+  </div>
+
+  <div class="pos" id="pos"></div>
+
+  <!-- RESULT -->
+  <div class="result" id="result">
+    <div class="big" id="r-big"></div>
+    <div class="r" id="r-r"></div>
+    <div style="font-size:13px;line-height:1.6" id="r-why"></div>
+    <div class="axes" id="axes"></div>
+    <button class="savej" id="savebtn">SAVE TO JOURNAL →</button>
+  </div>
+</div>
+
+<!-- JOURNAL -->
+<div class="card">
+  <h3>Your journal (<span id="jcount">0</span> entries)</h3>
+  <div id="journal"><div style="color:var(--dim);font-size:13px">No sessions yet. Run one above.</div></div>
+  <button class="skipb" style="margin-top:10px" onclick="exportJournal()">⬇ Export journal (.jsonl)</button>
+</div>
+
+<div class="hint" style="text-align:center;margin-top:10px">ACADEMY-1 build · synthetic sessions today · Alpaca real-data slot marked in code (see <code>DATA_SOURCE</code>) · keyboard: <kbd>space</kbd> = next bar</div>
+
+<script>
+/* ================= DATA SOURCE =================
+   TODAY: synthetic sessions (seeded, realistic shapes).
+   NEXT (ACADEMY-1 step 1 on your Mac): replace generateSessions()
+   with cached Alpaca 1-min bars from state/academy_bars/.
+   The replay engine below does not care where bars come from. */
+const DATA_SOURCE = "synthetic";
+
+function rng(seed){let s=seed;return()=> (s=(s*9301+49297)%233280)/233280;}
+
+/* Build one synthetic day: 78 premarket 5-min bars (4:00-9:30) + 78 RTH 5-min bars (9:30-4:00 simplified to 60) */
+function makeDay(seed, type){
+  const R=rng(seed), bars=[];
+  let p=183.5+R()*1.0;
+  // PREMARKET: establish range
+  let pmHi=-1e9, pmLo=1e9;
+  for(let i=0;i<40;i++){
+    const o=p, c=o+(R()-0.5)*0.5;
+    const h=Math.max(o,c)+R()*0.12, l=Math.min(o,c)-R()*0.12;
+    bars.push({o,h,l,c,v:0.4+R()*0.6,pm:true});
+    p=c; pmHi=Math.max(pmHi,h); pmLo=Math.min(pmLo,l);
+  }
+  // RTH by scenario
+  const RTH=60;
+  const drift=()=> (R()-0.5)*0.28;
+  if(type==="trap_long"){
+    // drift to low, sweep below pmLo, snap, run toward pmHi
+    for(let i=0;i<RTH;i++){
+      const o=p; let c;
+      if(i<6) c=o-0.18+drift()*0.5;                       // drift down
+      else if(i===6) c=pmLo-0.35;                          // THE TRAP: wick below
+      else if(i===7) c=pmLo+0.25;                          // snap back inside
+      else if(i<14) c=o+0.22+drift()*0.4;                  // snap up
+      else c=o+0.06+drift();                               // trend toward pmHi
+      const h=Math.max(o,c)+R()*0.15, l=Math.min(o,c)-R()*0.15;
+      const v=(i>=6&&i<=9)?1.8+R():0.7+R()*0.6;
+      bars.push({o,h:Math.max(h, i===6?pmLo+0.05:h),l:i===6?pmLo-0.38:l,c,v,pm:false}); p=c;
+    }
+  } else if(type==="trap_short"){
+    for(let i=0;i<RTH;i++){
+      const o=p; let c;
+      if(i<6) c=o+0.16+drift()*0.5;
+      else if(i===6) c=pmHi+0.32;                          // trap above
+      else if(i===7) c=pmHi-0.28;
+      else if(i<14) c=o-0.2+drift()*0.4;
+      else c=o-0.05+drift();
+      const h=Math.max(o,c)+R()*0.15, l=Math.min(o,c)-R()*0.15;
+      const v=(i>=6&&i<=9)?1.8+R():0.7+R()*0.6;
+      bars.push({o,h:i===6?pmHi+0.36:h,l,c,v,pm:false}); p=c;
+    }
+  } else if(type==="breakout"){
+    // sweep-ish poke but KEEPS GOING — trap entries get killed
+    for(let i=0;i<RTH;i++){
+      const o=p; let c;
+      if(i<6) c=o-0.15+drift()*0.5;
+      else if(i<12) c=o-0.28+drift()*0.3;                  // breaks pmLo and RUNS
+      else c=o-0.1+drift();
+      const h=Math.max(o,c)+R()*0.15, l=Math.min(o,c)-R()*0.15;
+      const v=(i>=6&&i<=12)?1.6+R()*0.8:0.7+R()*0.6;
+      bars.push({o,h,l,c,v,pm:false}); p=c;
+    }
+  } else { // chop — NO SETUP
+    for(let i=0;i<RTH;i++){
+      const o=p, c=o+drift()*0.8;
+      const h=Math.max(o,c)+R()*0.12, l=Math.min(o,c)-R()*0.12;
+      bars.push({o,h,l,c,v:0.5+R()*0.5,pm:false}); p=c;
+    }
+  }
+  return {bars, pmHi, pmLo};
+}
+
+const SESSIONS=[
+ {id:"s1",name:"NVDA · Tuesday",desc:"Normal-looking morning. Or is it?",type:"trap_long",seed:11},
+ {id:"s2",name:"TSLA · Wednesday",desc:"Strong premarket. Buyers confident.",type:"trap_short",seed:23},
+ {id:"s3",name:"AMD · Thursday",desc:"Drifting toward the lows…",type:"breakout",seed:37},
+ {id:"s4",name:"NVDA · Friday",desc:"Quiet premarket, narrow range.",type:"chop",seed:41},
+ {id:"s5",name:"PLTR · Monday",desc:"Weekend news, gap energy.",type:"trap_long",seed:53},
+ {id:"s6",name:"SOFI · Tuesday",desc:"Low energy open.",type:"chop",seed:67},
+ {id:"s7",name:"QQQ · Wednesday",desc:"Index day, macro at 10.",type:"breakout",seed:71},
+ {id:"s8",name:"NVDA · Thursday",desc:"Heavy volume expected.",type:"trap_short",seed:83},
+];
+
+/* ================= REPLAY STATE MACHINE ================= */
+let S=null; // session state
+const $=id=>document.getElementById(id);
+
+function drawChart(){
+  const cv=$('cv'),ctx=cv.getContext('2d');
+  cv.width=cv.parentElement.clientWidth-32;
+  const W=cv.width,H=320;
+  ctx.clearRect(0,0,W,H);
+  const shown=S.day.bars.slice(0,S.idx);
+  if(!shown.length)return;
+  let lo=1e9,hi=-1e9;
+  shown.forEach(b=>{lo=Math.min(lo,b.l);hi=Math.max(hi,b.h);});
+  hi=Math.max(hi,S.day.pmHi);lo=Math.min(lo,S.day.pmLo);
+  const pad=(hi-lo)*0.08; hi+=pad; lo-=pad;
+  const Y=pr=>H-20-(pr-lo)/(hi-lo)*(H-50);
+  // premarket lines
+  [[S.day.pmHi,'#ff6b6b','PM HIGH '+S.day.pmHi.toFixed(2)],[S.day.pmLo,'#3ddc97','PM LOW '+S.day.pmLo.toFixed(2)]].forEach(([pr,c,l])=>{
+    ctx.strokeStyle=c;ctx.setLineDash([8,5]);ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(10,Y(pr));ctx.lineTo(W-10,Y(pr));ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=c;ctx.font='bold 10px sans-serif';ctx.fillText(l,14,Y(pr)-4);
+  });
+  const cw=(W-20)/S.day.bars.length;
+  shown.forEach((b,i)=>{
+    const x=14+i*cw+cw*0.3,up=b.c>=b.o,col=up?'#3ddc97':'#ff6b6b';
+    ctx.globalAlpha=b.pm?0.35:1;
+    ctx.strokeStyle=col;ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.moveTo(x,Y(b.h));ctx.lineTo(x,Y(b.l));ctx.stroke();
+    const t=Y(Math.max(b.o,b.c)),bt=Y(Math.min(b.o,b.c));
+    ctx.fillStyle=col;ctx.beginPath();ctx.roundRect(x-cw*0.24,t,cw*0.48,Math.max(2,bt-t),2);ctx.fill();
+    ctx.globalAlpha=1;
+  });
+  // position lines
+  if(S.pos){
+    [[S.pos.entry,'#5ea0ff','ENTRY'],[S.pos.bail,'#ff6b6b','BAIL'],[S.pos.target,'#ffd166','TARGET']].forEach(([pr,c,l])=>{
+      ctx.strokeStyle=c;ctx.setLineDash([4,4]);ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(10,Y(pr));ctx.lineTo(W-10,Y(pr));ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle=c;ctx.font='bold 10px sans-serif';ctx.fillText(l+' '+pr,W-120,Y(pr)-4);
+    });
+  }
+  // clock
+  const rthIdx=S.idx-40;
+  let label="Premarket";
+  if(rthIdx>0){const mins=570+rthIdx*5;const hh=Math.floor(mins/60),mm=mins%60;
+    label=(hh>12?hh-12:hh)+":"+String(mm).padStart(2,'0')+(hh>=12?" PM":" AM");}
+  $('clock').textContent=label;
+  $('barct').textContent=S.idx;
+  $('lastpx').textContent="$"+shown[shown.length-1].c.toFixed(2);
+}
+
+function nearExtreme(){
+  if(S.idx<40) return false;
+  const px=S.day.bars[S.idx-1].c;
+  const dHi=Math.abs(px-S.day.pmHi)/S.day.pmHi, dLo=Math.abs(px-S.day.pmLo)/S.day.pmLo;
+  return Math.min(dHi,dLo)<0.0015 && !S.pos && !S.done && !S.committed;
+}
+
+function stepBar(){
+  if(!S||S.done)return;
+  if(nearExtreme() && !S.committed){ openGate(); return; }
+  if(S.idx<S.day.bars.length){ S.idx++; }
+  if(S.pos) checkPosition();
+  drawChart();
+  if(S.idx>=S.day.bars.length && !S.done) endSession("Session ended (4:00 PM)");
+}
+
+function openGate(){
+  $('gate').classList.remove('hidden');
+  $('nextbtn').disabled=true;
+  const px=S.day.bars[S.idx-1].c;
+  $('g-entry').value=px.toFixed(2);
+  window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+}
+
+function commit(){
+  const dir=$('g-dir').value, e=+$('g-entry').value, b=+$('g-bail').value, t=+$('g-target').value, why=$('g-why').value.trim();
+  const err=$('gerr');
+  if(!e||!b||!t){err.textContent="Fill in entry, bail, AND target — all three, every time.";err.style.display='block';return;}
+  if(dir==="long"&&!(b<e&&t>e)){err.textContent="LONG needs: bail BELOW entry, target ABOVE entry.";err.style.display='block';return;}
+  if(dir==="short"&&!(b>e&&t<e)){err.textContent="SHORT needs: bail ABOVE entry, target BELOW entry.";err.style.display='block';return;}
+  if(why.length<10){err.textContent="One real sentence of WHY. Your journal keeps receipts.";err.style.display='block';return;}
+  err.style.display='none';
+  S.committed=true;
+  S.pos={dir,entry:e,bail:b,target:t,why,entryIdx:S.idx,risk:Math.abs(e-b)};
+  $('gate').classList.add('hidden');
+  $('nextbtn').disabled=false;
+  const pos=$('pos');pos.style.display='block';
+  pos.innerHTML=`📍 <b>${dir.toUpperCase()}</b> @ $${e.toFixed(2)} · bail $${b.toFixed(2)} · target $${t.toFixed(2)} · risk $${S.pos.risk.toFixed(2)}/share<br><span style="color:var(--dim)">"${why}"</span>`;
+  S.idx++; if(S.pos)checkPosition(); drawChart();
+}
+
+function checkPosition(){
+  const b=S.day.bars[S.idx-1], p=S.pos;
+  if(!p||p.closed)return;
+  if(p.dir==="long"){
+    if(b.l<=p.bail) closePosition(false,"Bailed — price hit your stop at $"+p.bail.toFixed(2));
+    else if(b.h>=p.target) closePosition(true,"Target hit at $"+p.target.toFixed(2));
+  } else {
+    if(b.h>=p.bail) closePosition(false,"Bailed — price hit your stop at $"+p.bail.toFixed(2));
+    else if(b.l<=p.target) closePosition(true,"Target hit at $"+p.target.toFixed(2));
+  }
+}
+
+function closePosition(win,msg){
+  S.pos.closed=true; S.pos.win=win;
+  const p=S.pos;
+  const pnl=p.dir==="long"?(win?p.target-p.entry:p.bail-p.entry):(win?p.entry-p.target:p.entry-p.bail);
+  S.result={win,R:(pnl/p.risk),msg};
+  endSession(msg);
+}
+
+function skipTrade(){
+  if(!S||S.done)return;
+  S.skipped=true;
+  const good=(S.scenario==="chop"); // no-setup sessions: skip is correct
+  S.result={skipped:true,good,win:good,R:0,msg:good?"You passed on a chop day — CORRECT. No setup is a setup.":"You skipped. The replay will show whether that was discipline or fear."};
+  S.idx=S.day.bars.length; drawChart(); endSession(S.result.msg);
+}
+
+function endSession(msg){
+  S.done=true;
+  $('nextbtn').disabled=true; $('skipbtn').disabled=true;
+  const r=S.result, el=$('result');
+  el.classList.remove('hidden','win','loss','flat');
+  // grade the scenario honestly
+  let truth;
+  if(S.scenario==="trap_long") truth="This WAS a real Trap & Snap (long). The low got swept, the snap was the entry.";
+  else if(S.scenario==="trap_short") truth="This WAS a real Trap & Snap (short). The high got swept, the snap down was the entry.";
+  else if(S.scenario==="breakout") truth="This was a REAL BREAKDOWN — the poke below the low never snapped back. Trap entries got run over. Bailing fast was survival.";
+  else truth="This was CHOP — no valid setup existed. The correct trade was no trade.";
+  if(r.skipped){ el.classList.add(r.good?'win':'flat'); $('r-big').textContent=r.good?"✅ SMART SKIP":"🤷 SKIPPED"; }
+  else if(r.win){ el.classList.add('win'); $('r-big').textContent="✅ TARGET HIT"; }
+  else { el.classList.add('loss'); $('r-big').textContent="🛑 BAILED OUT"; }
+  $('r-r').innerHTML=r.skipped?("R: 0 — "+(r.good?"correct pass":"see below")):("R-multiple: <b>"+r.R.toFixed(2)+"R</b>");
+  $('r-why').innerHTML=msg+"<br><br><b>The truth about this session:</b> "+truth;
+  buildAxes();
+  window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+}
+
+function buildAxes(){
+  const defs=[
+    ["setup","SETUP — was this a valid Trap & Snap per the rules?"],
+    ["exec","EXECUTION — entry/bail/target placed per plan?"],
+    ["mgmt","MANAGEMENT — did you hold to plan (no moving bail, no fear exits)?"],
+    ["outc","OUTCOME — did it make money? (least important)"]
+  ];
+  S.axes={};
+  $('axes').innerHTML=defs.map(([k,label])=>
+    `<div class="ax"><b>${label}</b><button onclick="setAx('${k}',true,this)">YES</button><button onclick="setAx('${k}',false,this)">NO</button></div>`).join('');
+  if(S.result.skipped){ // auto-fill setup axis for skips
+  }
+}
+function setAx(k,v,btn){
+  S.axes[k]=v;
+  btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('selY','selN'));
+  btn.classList.add(v?'selY':'selN');
+}
+
+function saveJournal(){
+  if(!S.axes||Object.keys(S.axes).length<4){alert("Answer all 4 axes first — grade your process, not just the money.");return;}
+  const entry={
+    ts:new Date().toISOString(), session:S.name, scenario:S.scenario,
+    skipped:!!S.skipped, pos:S.pos?{dir:S.pos.dir,entry:S.pos.entry,bail:S.pos.bail,target:S.pos.target,why:S.pos.why}:null,
+    R:S.result.R??0, win:!!S.result.win, axes:S.axes, note:S.result.msg
+  };
+  const j=JSON.parse(localStorage.getItem("academy_journal")||"[]");
+  j.push(entry); localStorage.setItem("academy_journal",JSON.stringify(j));
+  renderJournal();
+  $('savebtn').textContent="SAVED ✓ — pick another session";
+  $('picker').classList.remove('hidden');
+}
+
+function renderJournal(){
+  const j=JSON.parse(localStorage.getItem("academy_journal")||"[]");
+  $('jcount').textContent=j.length;
+  if(!j.length)return;
+  $('journal').innerHTML=j.slice().reverse().map(e=>{
+    const sc=e.skipped?"SKIP":(e.win?"WIN":"LOSS");
+    const col=e.skipped?"var(--blue)":(e.win?"var(--green)":"var(--red)");
+    const proc=e.axes?["setup","exec","mgmt"].map(k=>e.axes[k]?"✓":"✗").join(" "):"";
+    return `<div class="jrow"><span>${e.session} <span style="color:var(--dim)">· ${e.skipped?"no trade":(e.pos?e.pos.dir:"")}</span></span><b style="color:${col}">${sc} ${e.R?e.R.toFixed(2)+"R":""}</b><span style="color:var(--dim)">${proc}</span></div>`;
+  }).join("");
+}
+
+function exportJournal(){
+  const j=JSON.parse(localStorage.getItem("academy_journal")||"[]");
+  const blob=new Blob([j.map(x=>JSON.stringify(x)).join("\n")],{type:"text/plain"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="academy_journal.jsonl";a.click();
+}
+
+/* ================= BOOT ================= */
+$('sesslist').innerHTML=SESSIONS.map(s=>
+  `<div class="sess" onclick="start('${s.id}')"><div><div class="nm">${s.name}</div><div class="ds">${s.desc}</div></div><div class="tag">5-MIN</div></div>`).join("");
+
+function start(id){
+  const meta=SESSIONS.find(x=>x.id===id);
+  const day=makeDay(meta.seed,meta.type);
+  S={name:meta.name,scenario:meta.type,day,idx:41,pos:null,committed:false,done:false,skipped:false,result:null,axes:null};
+  $('picker').classList.add('hidden');
+  $('stage').classList.remove('hidden');
+  $('result').classList.add('hidden');
+  $('pos').style.display='none';
+  $('gate').classList.add('hidden');
+  $('nextbtn').disabled=false;$('skipbtn').disabled=false;
+  $('sessname').textContent=meta.name+" — the first RTH bar just printed. Premarket lines are drawn. Step forward.";
+  drawChart();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+$('nextbtn').onclick=stepBar;
+$('skipbtn').onclick=skipTrade;
+$('commitbtn').onclick=commit;
+$('savebtn').onclick=saveJournal;
+document.addEventListener('keydown',e=>{
+  if(e.code!=='Space')return;
+  if(!S||S.done)return;
+  const gateOpen=!$('gate').classList.contains('hidden');
+  const typing=/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
+  if(gateOpen||typing)return;
+  e.preventDefault();
+  if(!$('nextbtn').disabled)stepBar();
+});
+renderJournal();
+</script>
+</body>
+</html>
