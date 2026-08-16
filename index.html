@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Candle Coach — Home</title>
+<style>
+  :root{
+    --bg:#101623; --panel:#1a2334; --panel2:#222e44; --line:#2c3a55;
+    --txt:#f0f3fa; --dim:#93a0b8;
+    --green:#3ddc97; --red:#ff6b6b; --gold:#ffd166; --blue:#5ea0ff; --purple:#b388ff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
+  body{background:var(--bg);color:var(--txt);min-height:100vh;padding:14px;max-width:1200px;margin:0 auto}
+
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;background:var(--panel);border-radius:16px;margin-bottom:14px;border:1px solid var(--line);gap:10px;flex-wrap:wrap}
+  .logo{font-weight:900;font-size:20px}
+  .logo span{color:var(--gold)}
+  .nav{display:flex;gap:6px;flex-wrap:wrap}
+  .nav a{font-size:12px;color:var(--blue);text-decoration:none;font-weight:800;padding:6px 10px;border-radius:10px;background:var(--panel2)}
+  .nav a:hover{background:#1c2c47}
+  .pill{font-size:12px;font-weight:800;padding:6px 14px;border-radius:20px}
+  .pill.paper{background:#123528;color:var(--green)}
+
+  /* HERO — real day spotlight */
+  .signal{display:flex;align-items:center;gap:20px;background:linear-gradient(135deg,#123528,#1a2334);border:2px solid var(--green);border-radius:20px;padding:20px 24px;margin-bottom:14px}
+  .light{width:74px;height:74px;border-radius:50%;background:var(--green);flex-shrink:0;
+    box-shadow:0 0 40px rgba(61,220,151,.55);display:flex;align-items:center;justify-content:center;font-size:34px;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+  .signal .state{font-size:24px;font-weight:900;color:var(--green);letter-spacing:.5px}
+  .signal .why{font-size:14.5px;color:#cfe9dc;margin-top:4px;line-height:1.55}
+  .signal .why b{color:#fff}
+  .signal a{color:var(--gold);font-weight:900}
+
+  .grid{display:grid;grid-template-columns:1fr 320px;gap:14px}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+  .card h3{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--dim);margin-bottom:12px}
+
+  .chips{display:flex;gap:10px;flex-wrap:wrap}
+  .chip{background:var(--panel2);border:2px solid var(--line);border-radius:14px;padding:10px 14px;text-align:center;cursor:pointer;min-width:96px;text-decoration:none;color:var(--txt)}
+  .chip:hover{border-color:var(--blue)}
+  .chip.on{border-color:var(--blue);background:#1c2c47}
+  .chip .sym{font-weight:900;font-size:16px}
+  .chip .chg{font-size:12px;font-weight:800;margin-top:2px}
+  .chip .mood{font-size:11px;margin-top:2px;font-weight:700;color:var(--dim)}
+  .up{color:var(--green)} .dn{color:var(--red)}
+
+  canvas{width:100%;display:block;background:var(--panel2);border-radius:14px;margin-top:12px;cursor:pointer}
+  .chart-cap{font-size:12px;color:var(--dim);margin-top:8px;text-center;line-height:1.6;text-align:center}
+
+  .coach{display:flex;gap:14px;align-items:flex-start;background:var(--panel2);border-radius:16px;padding:16px;margin-top:14px;border:1px solid var(--line)}
+  .avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#ff9f43);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+  .bubble{background:#28355a;border-radius:0 14px 14px 14px;padding:12px 14px;font-size:14px;line-height:1.6;color:#e8edf9;flex:1}
+  .bubble b{color:var(--gold)}
+
+  .score{display:flex;justify-content:space-between;align-items:center;background:var(--panel2);border-radius:12px;padding:10px 14px;margin-bottom:8px;font-size:13px}
+  .badge{font-size:11px;font-weight:900;padding:4px 10px;border-radius:12px}
+  .b-win{background:#123528;color:var(--green)} .b-loss{background:#3d1a1e;color:var(--red)} .b-dim{background:var(--bg);color:var(--dim)}
+  .bar{height:9px;border-radius:6px;background:var(--panel2);overflow:hidden;margin:4px 0 12px}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--purple))}
+  .prow{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700}
+
+  .foot{margin-top:14px;text-align:center;font-size:11px;color:var(--dim);line-height:1.7}
+  .foot .big{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+  .foot a.bigbtn{display:inline-block;color:#fff;text-decoration:none;font-weight:800;font-size:14px;padding:12px 22px;border-radius:14px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">CANDLE<span>COACH</span></div>
+  <div class="nav">
+    <a href="guide.html">📖 Guide</a>
+    <a href="flashcards.html">🃏 Cards</a>
+    <a href="quiz.html">🧠 Quiz</a>
+    <a href="lingo.html">🗣️ Lingo</a>
+    <a href="drill.html">🪤 Drill</a>
+    <a href="replay.html">🎞️ Replay</a>
+  </div>
+  <div class="pill paper">PAPER MODE</div>
+</div>
+
+<div class="signal" id="hero"></div>
+
+<div class="grid">
+  <div>
+    <div class="card">
+      <h3 id="chipTitle">Real tickers — tap one to open its full page</h3>
+      <div class="chips" id="chips"></div>
+      <canvas id="c" height="280" title="Tap to open this ticker's page"></canvas>
+      <div class="chart-cap">Real 5-minute candles from <span id="capDay"></span> · Purple = morning ceiling · Gold = morning floor · <b>tap the chart for the full ticker page</b></div>
+    </div>
+
+    <div class="coach">
+      <div class="avatar">🧢</div>
+      <div class="bubble" id="coachBubble"></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <h3>Your progress (saved on this device)</h3>
+      <div id="progBox"></div>
+      <a href="quiz.html" style="display:block;text-align:center;margin-top:6px;background:linear-gradient(90deg,var(--blue),var(--purple));color:#fff;text-decoration:none;font-weight:800;font-size:13px;padding:11px;border-radius:12px">🧠 Take a quiz →</a>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <h3>The 60-second lesson from this real day</h3>
+      <div style="font-size:14px;line-height:1.7;color:#e8edf9" id="lesson"></div>
+    </div>
+  </div>
+</div>
+
+<div class="foot">
+  <div class="big">
+    <a class="bigbtn" href="flashcards.html" style="background:linear-gradient(90deg,var(--blue),var(--purple))">🃏 Flashcards</a>
+    <a class="bigbtn" href="lingo.html" style="background:linear-gradient(90deg,#b388ff,#8e6ad8)">🗣️ Learn the Lingo</a>
+    <a class="bigbtn" href="drill.html" style="background:linear-gradient(90deg,var(--gold),#ff9f43);color:#241a05">🪤 Trap &amp; Snap Drill</a>
+    <a class="bigbtn" href="replay.html" style="background:linear-gradient(90deg,#3ddc97,#2ea86f);color:#08130c">🎞️ Replay Engine</a>
+  </div>
+  Data: real 5-minute candles from the last trading day (Yahoo Finance), saved when this page was built.<br>
+  Everything here is practice. Gates: prove yourself on paper 4 weeks → then real money talks. Never before.
+</div>
+
+<script src="data.js"></script>
+<script>
+const SYMS=Object.keys(MARKET.tickers);
+const fmtT=m=>{const h=Math.floor(m/60),mm=m%60,ap=h>=12?'PM':'AM',hh=((h+11)%12)+1;return hh+':'+String(mm).padStart(2,'0')+' '+ap;};
+function moodOf(chg){
+  if(chg>=2)return['🔥 On fire','up'];
+  if(chg>=0.3)return['🌤️ Climbing','up'];
+  if(chg>-0.3)return['😴 Sleepy',''];
+  if(chg>-2)return['🌧️ Slipping','dn'];
+  return['🧊 Dumping','dn'];
+}
+// pick spotlight: biggest best-trade opportunity
+let spotlight=SYMS[0], bestOpp=0;
+SYMS.forEach(s=>{const T=MARKET.tickers[s];const opp=Math.max(T.bestLong.pnl,T.bestShort.pnl)/T.prevClose*100;if(opp>bestOpp){bestOpp=opp;spotlight=s;}});
+
+// chips
+let sel=spotlight;
+function renderChips(){
+  document.getElementById('chips').innerHTML=SYMS.map(s=>{
+    const T=MARKET.tickers[s], chg=100*(T.close/T.prevClose-1), [mood]=moodOf(chg);
+    return `<div class="chip ${s===sel?'on':''}" data-sym="${s}" onclick="pick('${s}')" ondblclick="openTicker('${s}')">
+      <div class="sym">${s}</div>
+      <div class="chg ${chg>=0?'up':'dn'}">${chg>=0?'+':''}${chg.toFixed(2)}%</div>
+      <div class="mood">${mood}</div></div>`;
+  }).join('');
+}
+function pick(s){sel=s;renderChips();draw();}
+function openTicker(s){location.href='ticker.html?sym='+s;}
+function chgOf(s){const T=MARKET.tickers[s];return 100*(T.close/T.prevClose-1);}
+
+// chart
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+cv.addEventListener('click',()=>openTicker(sel));
+function draw(){
+  const T=MARKET.tickers[sel],CD=T.candles,N=CD.length;
+  const W=cv.width=cv.parentElement.clientWidth-32,H=cv.height=280;
+  let lo=Infinity,hi=-Infinity;
+  CD.forEach(k=>{lo=Math.min(lo,k[3]);hi=Math.max(hi,k[2]);});
+  lo=Math.min(lo,T.ORL);hi=Math.max(hi,T.ORH);
+  const pad=(hi-lo)*0.08;lo-=pad;hi+=pad;
+  const L=44,R=10,Tp=14,B=24,X=i=>L+(i+0.5)*(W-L-R)/N,Y=p=>Tp+(hi-p)/(hi-lo)*(H-Tp-B);
+  ctx.fillStyle='#93a0b8';ctx.font='10px sans-serif';
+  [0,18,36,54,77].forEach(i=>ctx.fillText(fmtT(CD[i][0]).replace(' ',''),X(i)-16,H-8));
+  function lvl(p,c,lab){ctx.strokeStyle=c;ctx.setLineDash([7,5]);ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(L-4,Y(p));ctx.lineTo(W-8,Y(p));ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=c;ctx.font='bold 10px sans-serif';ctx.fillText(lab,L,Y(p)-4);}
+  lvl(T.ORH,'#b388ff','CEILING '+T.ORH.toFixed(2));
+  lvl(T.ORL,'#ffd166','FLOOR '+T.ORL.toFixed(2));
+  const cw=(W-L-R)/N;
+  CD.forEach((k,i)=>{
+    const[,o,h,l,c]=k,up=c>=o,col=up?'#3ddc97':'#ff6b6b';
+    ctx.strokeStyle=col;ctx.lineWidth=1.1;
+    ctx.beginPath();ctx.moveTo(X(i),Y(h));ctx.lineTo(X(i),Y(l));ctx.stroke();
+    const t=Y(Math.max(o,c)),b=Y(Math.min(o,c));
+    ctx.fillStyle=col;ctx.fillRect(X(i)-cw*0.3,t,cw*0.6,Math.max(2,b-t));
+  });
+}
+
+// hero spotlight
+(function(){
+  const T=MARKET.tickers[spotlight],chg=chgOf(spotlight);
+  const trapTxt=T.traps.length&&T.traps.some(t=>t.snap!==null)
+    ?'It even printed a textbook <b>Trap &amp; Snap</b> — the exact fake-out you drill in this app.'
+    :'It was the biggest mover of the day — a real lesson in how fast money moves.';
+  document.getElementById('hero').innerHTML=`
+    <div class="light">${chg>=0?'📈':'📉'}</div>
+    <div>
+      <div class="state">REAL DAY REPLAY — ${MARKET.dayLabel.toUpperCase()}</div>
+      <div class="why">Spotlight: <b>${spotlight}</b> (${chg>=0?'+':''}${chg.toFixed(2)}%). The best trade of its day was worth
+      <b>$${Math.max(T.bestLong.pnl,T.bestShort.pnl).toFixed(2)}/share</b>. ${trapTxt}
+      <a href="ticker.html?sym=${spotlight}">Open the ${spotlight} breakdown →</a></div>
+    </div>`;
+})();
+
+// coach bubble — uses the spotlight's real story
+(function(){
+  const T=MARKET.tickers[spotlight];
+  document.getElementById('coachBubble').innerHTML='<b>Coach:</b> Every ticker below shows a REAL trading day. Tap one and you get the full page: the <b>Recap</b> (what happened + the best entries/exits), <b>Practice</b> (trade the day yourself, candle by candle), and the <b>Playground</b> (“what if I entered HERE with $500?”). Start with the recap — then try to beat it in practice.';
+})();
+
+// lesson — spotlight trap or best short
+(function(){
+  const T=MARKET.tickers[spotlight];
+  let txt=T.story[T.story.length-1]+' '+T.story[2];
+  document.getElementById('lesson').innerHTML=txt.replace(/\$[\d,.]+/g,m=>'<b style="color:var(--gold)">'+m+'</b>');
+})();
+
+// progress panel
+(function(){
+  let p={};try{p=JSON.parse(localStorage.getItem('cc_progress')||'{}');}catch(e){}
+  const q=p.quiz||{}, pr=p.practice||{};
+  const cats=[['basics','🎒 Basics'],['candles','🕯️ Candles'],['lingo','🗣️ Lingo'],['trap','🪤 Trap & Snap']];
+  let html=cats.map(([k,nm])=>{
+    const s=q[k]; const pct=s&&s.best?Math.round(s.best):0;
+    return `<div class="prow"><span>${nm}</span><span style="color:${pct>=80?'var(--green)':pct?'var(--gold)':'var(--dim)'}">${s&&s.taken?pct+'% best':'not tried'}</span></div>
+      <div class="bar"><i style="width:${pct}%"></i></div>`;
+  }).join('');
+  const syms=Object.keys(pr);
+  if(syms.length){
+    const tot=syms.reduce((a,s)=>a+pr[s].pnl,0), plays=syms.reduce((a,s)=>a+pr[s].plays,0);
+    html+=`<div class="prow" style="margin-top:6px"><span>🎮 Practice sessions</span><span>${plays} played</span></div>
+    <div class="score" style="margin-top:8px"><span>Total practice P&amp;L</span><span class="badge ${tot>=0?'b-win':'b-loss'}">${tot>=0?'+':'−'}$${Math.abs(tot).toFixed(2)}</span></div>`;
+  }else{
+    html+=`<div class="score" style="margin-top:8px"><span>🎮 Practice mode</span><span class="badge b-dim">tap a ticker → Practice</span></div>`;
+  }
+  document.getElementById('progBox').innerHTML=html;
+})();
+
+document.getElementById('capDay').textContent=MARKET.dayLabel;
+renderChips();draw();
+window.addEventListener('resize',draw);
+</script>
+</body>
+</html>
